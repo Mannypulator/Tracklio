@@ -1,0 +1,135 @@
+using System;
+using System.Reflection;
+using System.Text;
+using FluentValidation;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using Tracklio.Shared.Behaviours;
+using Tracklio.Shared.Configurations;
+using Tracklio.Shared.Metrics;
+using Tracklio.Shared.Persistence;
+using Tracklio.Shared.Security;
+using Tracklio.Shared.Services;
+using Tracklio.Shared.Slices;
+
+namespace Tracklio;
+
+public static class ServiceCollectionExtension
+{
+    public static IServiceCollection RegisterApplicationServices(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.RegisterSlices();
+        var currentAssembly = Assembly.GetExecutingAssembly();
+
+        services.AddMediatR(cfg =>
+        {
+            cfg.RegisterServicesFromAssemblies(currentAssembly)
+            .RegisterServicesFromAssemblies(currentAssembly)
+                .AddOpenRequestPreProcessor(typeof(LoggingBehaviour<>))
+                .AddOpenBehavior(typeof(ModelValidationBehaviour<,>))
+                .AddOpenBehavior(typeof(HandlerPerformanceMetricBehaviour<,>));
+        });
+        services.AddValidatorsFromAssembly(currentAssembly);
+        services.AddSingleton<HandlerPerformanceMetric>();
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
+        services.AddHealthChecks()
+            .AddDbContextCheck<RepositoryContext>()
+            .AddNpgSql(configuration.GetConnectionString("TracklioDbConnection")!)
+            .AddCheck("api-health", () => HealthCheckResult.Healthy("API is running"));
+            
+        return services;
+    }
+
+    public static IServiceCollection RegisterPersistenceServices(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.AddDbContext<RepositoryContext>(options =>
+            options.UseNpgsql(
+                configuration.GetConnectionString("TracklioDbConnection")));
+        return services;
+    }
+    
+    public static IServiceCollection RegisterJwtServices(this IServiceCollection services, IConfiguration configuration)
+    {
+
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = configuration["JwtSettings:Issuer"],
+                    ValidAudience = configuration["JwtSettings:Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JwtSettings:SecretKey"]!))
+                };
+            });
+        
+        services.AddAuthorization(options =>
+        {
+            options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+            options.AddPolicy("MotoristOrAdmin", policy => policy.RequireRole("Motorist", "Admin"));
+        });
+
+        return services;
+    }
+    
+    public static IServiceCollection RegisterSwaggerServices(this IServiceCollection services)
+    {
+        services.AddEndpointsApiExplorer();
+        services.AddSwaggerGen(c =>
+        {
+            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Tracklio API", Version = "v1" });
+            c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                In = ParameterLocation.Header,
+                Description = "Please enter JWT with Bearer into field (e.g., Bearer {token})",
+                Name = "Authorization",
+                Type = SecuritySchemeType.Http, // Use Http for JWT
+                Scheme = "bearer", // Lowercase 'bearer' as per OpenAPI spec
+                BearerFormat = "JWT" // Optional: indicates JWT format
+            });
+            c.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        }
+                    },
+                    Array.Empty<string>() // Simplified syntax
+                }
+            });
+        });
+
+        return services;
+    }
+    
+    public static IServiceCollection RegisterAppConfigurations(this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        var jwtSettings = configuration.GetSection("JwtSettings");
+        var smtpSettings = configuration.GetSection("SmtpSettings");
+        services.Configure<JwtSettings>(jwtSettings);
+        services.Configure<SmtpSettings>(smtpSettings);
+
+
+        return services;
+    }
+
+    public static IServiceCollection RegisterInfrastructureServices(this IServiceCollection services)
+    {
+        services.AddScoped<IEmailService, EmailService>();
+        return services;
+    }
+
+}
