@@ -1,4 +1,3 @@
-using System;
 using MediatR.Pipeline;
 using Tracklio.Shared.Security;
 

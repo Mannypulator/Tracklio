@@ -1,4 +1,3 @@
-using System;
 using System.Reflection;
 using System.Text;
 using FluentValidation;
@@ -13,6 +12,8 @@ using Tracklio.Shared.Metrics;
 using Tracklio.Shared.Persistence;
 using Tracklio.Shared.Security;
 using Tracklio.Shared.Services;
+using Tracklio.Shared.Services.Otp;
+using Tracklio.Shared.Services.Token;
 using Tracklio.Shared.Slices;
 
 namespace Tracklio;
@@ -91,9 +92,9 @@ public static class ServiceCollectionExtension
                 In = ParameterLocation.Header,
                 Description = "Please enter JWT with Bearer into field (e.g., Bearer {token})",
                 Name = "Authorization",
-                Type = SecuritySchemeType.Http, // Use Http for JWT
-                Scheme = "bearer", // Lowercase 'bearer' as per OpenAPI spec
-                BearerFormat = "JWT" // Optional: indicates JWT format
+                Type = SecuritySchemeType.Http, 
+                Scheme = "bearer", 
+                BearerFormat = "JWT" 
             });
             c.AddSecurityRequirement(new OpenApiSecurityRequirement
             {
@@ -106,7 +107,7 @@ public static class ServiceCollectionExtension
                             Id = "Bearer"
                         }
                     },
-                    Array.Empty<string>() // Simplified syntax
+                    [] 
                 }
             });
         });
@@ -129,6 +130,8 @@ public static class ServiceCollectionExtension
     public static IServiceCollection RegisterInfrastructureServices(this IServiceCollection services)
     {
         services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<IOtpService, OtpService>();
         return services;
     }
 

@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -12,7 +11,7 @@ namespace Tracklio.Shared.Persistence
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Users",
+                name: "Auth",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -56,7 +55,7 @@ namespace Tracklio.Shared.Persistence
                     table.ForeignKey(
                         name: "FK_NotificationPreferences_Users_UserId",
                         column: x => x.UserId,
-                        principalTable: "Users",
+                        principalTable: "Auth",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -81,7 +80,7 @@ namespace Tracklio.Shared.Persistence
                     table.ForeignKey(
                         name: "FK_UserRefreshTokens_Users_UserId",
                         column: x => x.UserId,
-                        principalTable: "Users",
+                        principalTable: "Auth",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -107,7 +106,7 @@ namespace Tracklio.Shared.Persistence
                     table.ForeignKey(
                         name: "FK_Vehicles_Users_UserId",
                         column: x => x.UserId,
-                        principalTable: "Users",
+                        principalTable: "Auth",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -264,7 +263,7 @@ namespace Tracklio.Shared.Persistence
 
             migrationBuilder.CreateIndex(
                 name: "IX_Users_Email",
-                table: "Users",
+                table: "Auth",
                 column: "Otp",
                 unique: true);
 
@@ -301,7 +300,7 @@ namespace Tracklio.Shared.Persistence
                 name: "Vehicles");
 
             migrationBuilder.DropTable(
-                name: "Users");
+                name: "Auth");
         }
     }
 }

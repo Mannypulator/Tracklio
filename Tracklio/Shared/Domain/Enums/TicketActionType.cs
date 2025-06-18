@@ -1,5 +1,3 @@
-using System;
-
 namespace Tracklio.Shared.Domain.Enums;
 
 public enum TicketActionType

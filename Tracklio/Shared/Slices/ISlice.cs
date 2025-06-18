@@ -1,5 +1,3 @@
-using System;
-
 namespace Tracklio.Shared.Slices;
 
 public interface ISlice

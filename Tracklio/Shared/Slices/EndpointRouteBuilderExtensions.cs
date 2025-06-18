@@ -1,5 +1,3 @@
-using System;
-
 namespace Tracklio.Shared.Slices;
 
 public static class EndpointRouteBuilderExtensions

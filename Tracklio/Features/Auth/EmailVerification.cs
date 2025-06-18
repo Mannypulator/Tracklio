@@ -1,5 +1,4 @@
 using System.IdentityModel.Tokens.Jwt;
-using System.Text.Json.Serialization;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -7,26 +6,24 @@ using Tracklio.Shared.Domain.Dto;
 using Tracklio.Shared.Persistence;
 using Tracklio.Shared.Slices;
 
-namespace Tracklio.Features.Users;
+namespace Tracklio.Features.Auth;
 
 public sealed class EmailVerification : ISlice
 {
     public void AddEndpoint(IEndpointRouteBuilder endpointRouteBuilder)
     {
-        endpointRouteBuilder.MapPost("api/v1/verify-email", async (
+        endpointRouteBuilder.MapPost("api/v1/auth/verify-email", async (
                 HttpContext httpContext,
                 VerifyEmailCommand request,
                 IMediator mediator,
                 CancellationToken ct
             ) =>
             {
-                var email = httpContext.User.FindFirst(JwtRegisteredClaimNames.Email)?.Value!;
-                request.Email = email;
                 var response = await mediator.Send(request, ct);
                 return response.ReturnedResponse();
             })
             .WithName("VerifyEmail")
-            .WithTags("Users")
+            .WithTags("Auth")
             .WithOpenApi(operation => new(operation)
             {
                 Summary = "Verify onboarded user's email",
@@ -44,13 +41,14 @@ public sealed class EmailVerification : ISlice
         public string Otp { get; set; }
     };
 
-    public class VerifyEmailCommandHandler(RepositoryContext context) : IRequestHandler<VerifyEmailCommand, GenericResponse<string>>
+    public class VerifyEmailCommandHandler(RepositoryContext context) : IRequestHandler<EmailVerification.VerifyEmailCommand, GenericResponse<string>>
     {
         public async Task<GenericResponse<string>> Handle(VerifyEmailCommand request, CancellationToken cancellationToken)
         {
                        
             var otpExists = await context
                 .UserOtps
+                .AsNoTracking()
                 .AnyAsync(u 
                     => u.Email.Trim() == request.Email.Trim() 
                        && u.OneTimePassword.Trim() == request.Otp.Trim(), cancellationToken: cancellationToken);
@@ -81,8 +79,8 @@ public sealed class EmailVerification : ISlice
     {
         public VerifyEmailCommandValidator()
         {
-            RuleFor(x => x.Otp).NotNull().NotEmpty().MaximumLength(6);
-            RuleFor(x => x.Email).NotNull().NotEmpty();
+            RuleFor(x => x.Otp).NotNull().NotEmpty().Length(7);
+            RuleFor(x => x.Email).NotNull().NotEmpty().EmailAddress().WithMessage("Invalid email address");
         }
     }
 

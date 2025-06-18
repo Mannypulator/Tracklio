@@ -1,4 +1,3 @@
-using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace Tracklio.Shared.Domain.Entities;
@@ -30,8 +29,7 @@ public class Vehicle
     public bool IsActive { get; set; } = true;
 
     public DateTime? LastSyncAt { get; set; }
-
-    // Navigation properties
+    
     public virtual User User { get; set; } = null!;
     public virtual ICollection<ParkingTicket> ParkingTickets { get; set; } = new List<ParkingTicket>();
 }

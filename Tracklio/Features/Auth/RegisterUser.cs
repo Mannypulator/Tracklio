@@ -4,17 +4,19 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Tracklio.Shared.Domain.Dto;
 using Tracklio.Shared.Domain.Entities;
+using Tracklio.Shared.Domain.Enums;
 using Tracklio.Shared.Persistence;
 using Tracklio.Shared.Services;
+using Tracklio.Shared.Services.Token;
 using Tracklio.Shared.Slices;
 
-namespace Tracklio.Features.Users;
+namespace Tracklio.Features.Auth;
 
 public sealed class RegisterUser : ISlice
 {
     public void AddEndpoint(IEndpointRouteBuilder endpointRouteBuilder)
     {
-        endpointRouteBuilder.MapPost("api/v1/users", async (
+        endpointRouteBuilder.MapPost("api/v1/auth/register", async (
                 RegisterUserCommand request,
                 IMediator mediator,
                 CancellationToken ct
@@ -24,7 +26,7 @@ public sealed class RegisterUser : ISlice
                 return response.ReturnedResponse();
             })
             .WithName("RegisterUser")
-            .WithTags("Users")
+            .WithTags("Auth")
             .WithOpenApi(operation => new OpenApiOperation(operation)
             {
                 Summary = "Registers a new user",
@@ -47,13 +49,15 @@ public sealed class RegisterUser : ISlice
     
     public sealed class RegisterUserHandler(
         RepositoryContext context,
+        ITokenService tokenService,
         IEmailService emailService
-        ): IRequestHandler<RegisterUserCommand, GenericResponse<string>>
+        ): IRequestHandler<RegisterUser.RegisterUserCommand, GenericResponse<string>>
     {
         public async Task<GenericResponse<string>> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
         {
             var existingUser = await context
                 .Users
+                .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Email.Trim() == request.Email.Trim(), cancellationToken: cancellationToken);
             
             if (existingUser is not null)
@@ -62,6 +66,11 @@ public sealed class RegisterUser : ISlice
             }
 
             var userToBeSaved = request.MapToEntity();
+
+            var notificationPreference = request.MapToNotificationPreferences(userToBeSaved.Id);
+            
+            var accessToken = tokenService.GenerateAccessToken(userToBeSaved.Id, userToBeSaved.Email, userToBeSaved.Role.ToString());
+            var refreshToken = tokenService.GenerateRefreshToken();
             
             var code = Util.GenerateOtp();
             
@@ -72,12 +81,25 @@ public sealed class RegisterUser : ISlice
                 CreatedAt = DateTime.UtcNow
             };
             
+            var userRefreshToken = new UserRefreshToken
+            {
+                Id = Guid.NewGuid(),
+                UserId = userToBeSaved.Id,
+                Token = refreshToken,
+                ExpiresAt = DateTime.UtcNow.AddDays(7),
+                CreatedAt = DateTime.UtcNow
+            };
+            
+            await context.UserRefreshTokens.AddAsync(userRefreshToken, cancellationToken);
             await context.UserOtps.AddAsync(otp, cancellationToken);
             
             await context.Users.AddAsync(userToBeSaved, cancellationToken);
             await context.SaveChangesAsync(cancellationToken);
             
+            
             var emailBody = $"Kindly use this Otp:{code} to validate your account";
+            
+            
 
             await emailService.SendEmailAsync(request.Email, "VERIFY EMAIL", emailBody);
             
@@ -91,11 +113,11 @@ public sealed class RegisterUser : ISlice
         {
             RuleFor(x => x.Email)
                 .NotEmpty()
-                .WithMessage("Otp is required")
+                .WithMessage("Email is required")
                 .EmailAddress()
-                .WithMessage("Otp must be a valid email address")
+                .WithMessage("Email must be a valid email address")
                 .MaximumLength(50)
-                .WithMessage("Otp must not exceed 256 characters");
+                .WithMessage("Email must not exceed 50 characters");
 
             RuleFor(x => x.Password)
                 .NotEmpty()
@@ -145,13 +167,33 @@ public static partial class UserMapping
         return new User()
         {
             Id = Guid.NewGuid(),
-            Email = dto.Email,
+            Email = dto.Email.ToLowerInvariant(),
             FirstName = dto.FirstName,
             LastName = dto.LastName,
             PhoneNumber = dto.PhoneNumber,
-            
+            Role = UserRole.Motorist,
+            IsActive = true,
+            EmailConfirmed = false,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
             CreatedAt = DateTime.UtcNow
+        };
+    }
+
+
+    public static NotificationPreferences MapToNotificationPreferences(this RegisterUser.RegisterUserCommand dto, Guid userId)
+    {
+        return new NotificationPreferences
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId,
+            EmailNotifications = true,
+            SmsNotifications = !string.IsNullOrEmpty(dto.PhoneNumber),
+            PushNotifications = true,
+            NewTicketNotifications = true,
+            PaymentReminderNotifications = true,
+            AppealStatusNotifications = true,
+            DeadlineReminderNotifications = true,
+            ReminderDaysBefore = 3
         };
     }
 }

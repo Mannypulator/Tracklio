@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -13,7 +12,7 @@ namespace Tracklio.Shared.Persistence
         {
             migrationBuilder.AddColumn<DateTime>(
                 name: "UpdatedAt",
-                table: "Users",
+                table: "Auth",
                 type: "timestamp with time zone",
                 nullable: false,
                 defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified));
@@ -24,7 +23,7 @@ namespace Tracklio.Shared.Persistence
         {
             migrationBuilder.DropColumn(
                 name: "UpdatedAt",
-                table: "Users");
+                table: "Auth");
         }
     }
 }

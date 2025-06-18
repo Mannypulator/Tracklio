@@ -1,17 +1,17 @@
-using System;
 using FluentValidation;
 using MediatR;
+using Tracklio.Shared.Domain.Dto;
 
 namespace Tracklio.Shared.Behaviours;
 
-public class ModelValidationBehaviour<TRequest, IResult>
-    (IEnumerable<IValidator<TRequest>> validators) : IPipelineBehavior<TRequest, IResult>
-    where TRequest : IRequest<IResult>
+public class ModelValidationBehaviour<TRequest, TResponse>
+    (IEnumerable<IValidator<TRequest>> validators) : IPipelineBehavior<TRequest, TResponse>
+    where TRequest : IRequest<TResponse>
 {
     private readonly IEnumerable<IValidator<TRequest>> _validators = validators;
 
-    public async Task<IResult> Handle(TRequest request,
-        RequestHandlerDelegate<IResult> next, CancellationToken cancellationToken)
+    public async Task<TResponse> Handle(TRequest request,
+        RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
     {
         if (!_validators.Any())
         {
@@ -20,27 +20,60 @@ public class ModelValidationBehaviour<TRequest, IResult>
 
         var context = new ValidationContext<TRequest>(request);
 
-        var validationResults = _validators.Select(v => v.Validate(context)).ToList();
-        var groupedValidationFailures = validationResults.SelectMany(v => v.Errors)
-            .GroupBy(e => e.PropertyName)
-            .Select(g => new
-            {
-                PropertyName = g.Key,
-                ValidationFailures = g.Select(v => new { v.ErrorMessage })
-            }).ToList();
+        // Use async validation for better performance
+        var validationResults = await Task.WhenAll(
+            _validators.Select(v => v.ValidateAsync(context, cancellationToken)));
 
-        if (groupedValidationFailures.Count != 0)
+        var failures = validationResults
+            .SelectMany(r => r.Errors)
+            .Where(f => f != null)
+            .ToList();
+
+        if (failures.Any())
         {
-            var validationProblemsDictionary = new Dictionary<string, string[]>();
-            foreach (var group in groupedValidationFailures)
+            // Check if TResponse is IResult
+            if (typeof(TResponse) == typeof(IResult))
             {
-                var errorMessages = group.ValidationFailures.Select(v => v.ErrorMessage);
-                validationProblemsDictionary.Add(group.PropertyName, errorMessages.ToArray());
-            }
+                // Create validation problem for IResult endpoints
+                var validationProblemsDictionary = failures
+                    .GroupBy(e => e.PropertyName)
+                    .ToDictionary(
+                        g => ToCamelCase(g.Key),
+                        g => g.Select(e => e.ErrorMessage).ToArray()
+                    );
 
-            return (IResult)Results.ValidationProblem(validationProblemsDictionary);
+                var errorData = new
+                {
+                    type = "ValidationError",
+                    errors = validationProblemsDictionary
+                };
+
+                var response = new GenericResponse<object>
+                {
+                    StatusCode = 400,
+                    Message = "Validation failed",
+                    Data = errorData
+                };
+
+                var result = Results.BadRequest(response);
+                return (TResponse)(object)result;
+            }
+            else
+            {
+                // For non-IResult handlers, throw ValidationException
+                // Let GlobalExceptionHandler format it properly
+                throw new ValidationException(failures);
+            }
         }
 
         return await next();
+    }
+
+    private static string ToCamelCase(string str)
+    {
+        if (string.IsNullOrEmpty(str) || char.IsLower(str[0]))
+            return str;
+
+        return char.ToLowerInvariant(str[0]) + str[1..];
     }
 }

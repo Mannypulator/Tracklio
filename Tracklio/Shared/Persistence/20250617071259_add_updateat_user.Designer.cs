@@ -311,7 +311,7 @@ namespace Tracklio.Shared.Persistence
                     b.HasIndex("Otp")
                         .IsUnique();
 
-                    b.ToTable("Users");
+                    b.ToTable("Auth");
                 });
 
             modelBuilder.Entity("Tracklio.Shared.Domain.Entities.UserOtp", b =>
