@@ -79,7 +79,7 @@ public sealed class EmailVerification : ISlice
     {
         public VerifyEmailCommandValidator()
         {
-            RuleFor(x => x.Otp).NotNull().NotEmpty().Length(7);
+            RuleFor(x => x.Otp).NotNull().NotEmpty().Length(6);
             RuleFor(x => x.Email).NotNull().NotEmpty().EmailAddress().WithMessage("Invalid email address");
         }
     }

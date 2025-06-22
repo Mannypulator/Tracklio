@@ -53,7 +53,7 @@ public sealed class SendOtp : ISlice
                 return GenericResponse<string>.Error(404, "User not found.");
             }
             
-            var code = Util.GenerateOtp();
+            var code = Util.GenerateSecureOtp(6);
             
             var otp = new UserOtp()
             {

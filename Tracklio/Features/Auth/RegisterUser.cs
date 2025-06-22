@@ -72,7 +72,7 @@ public sealed class RegisterUser : ISlice
             var accessToken = tokenService.GenerateAccessToken(userToBeSaved.Id, userToBeSaved.Email, userToBeSaved.Role.ToString());
             var refreshToken = tokenService.GenerateRefreshToken();
             
-            var code = Util.GenerateOtp();
+            var code = Util.GenerateSecureOtp(6);
             
             var otp = new UserOtp()
             {

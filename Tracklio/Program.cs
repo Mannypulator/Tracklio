@@ -14,6 +14,7 @@ builder.Services.RegisterJwtServices(builder.Configuration);
 builder.Services.RegisterAppConfigurations(builder.Configuration);
 builder.Services.RegisterInfrastructureServices();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.RegisterCors();
 builder.Services.AddProblemDetails();
 
 var app = builder.Build();
@@ -22,6 +23,8 @@ var app = builder.Build();
 
 app.UseSwagger();
 app.UseSwaggerUI();
+
+app.UseCors("AllowAll");
 
 app.UseExceptionHandler();
 app.UseHttpsRedirection();

@@ -32,7 +32,8 @@ public class GetUsers : ISlice
                 OperationId = "GetUsers",
             })
             .Produces<GenericResponse<UserResponse>>(StatusCodes.Status200OK)
-            .Produces<GenericResponse<string>>(StatusCodes.Status400BadRequest);
+            .Produces<GenericResponse<string>>(StatusCodes.Status400BadRequest)
+            .RequireAuthorization();
     }
     
     

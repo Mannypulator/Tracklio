@@ -8,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Tracklio.Shared.Behaviours;
 using Tracklio.Shared.Configurations;
+using Tracklio.Shared.Domain.Enums;
 using Tracklio.Shared.Metrics;
 using Tracklio.Shared.Persistence;
 using Tracklio.Shared.Security;
@@ -74,8 +75,9 @@ public static class ServiceCollectionExtension
         
         services.AddAuthorization(options =>
         {
-            options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
-            options.AddPolicy("MotoristOrAdmin", policy => policy.RequireRole("Motorist", "Admin"));
+            options.AddPolicy(PoliciesConstant.AdminOnly, policy => policy.RequireRole(nameof(UserRole.Admin)));
+            options.AddPolicy(PoliciesConstant.MotoristOrAdmin, policy => policy.RequireRole(nameof(UserRole.Motorist),nameof(UserRole.Admin)));
+            options.AddPolicy(PoliciesConstant.MotoristOnly, policy => policy.RequireRole( nameof(UserRole.Motorist)));
         });
 
         return services;
@@ -132,6 +134,29 @@ public static class ServiceCollectionExtension
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IOtpService, OtpService>();
+        return services;
+    }
+
+    public static IServiceCollection RegisterCors(this IServiceCollection services)
+    {
+        services.AddCors(options =>
+        {
+            options.AddPolicy("AllowSpecificOrigins", policy =>
+            {
+                policy.WithOrigins("https://localhost:3000", "https://yourdomain.com") 
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials(); 
+            });
+            
+            options.AddPolicy("AllowAll", policy =>
+            {
+                policy.AllowAnyOrigin()
+                    .AllowAnyHeader()
+                    .AllowAnyMethod();
+            });
+        });
+        
         return services;
     }
 

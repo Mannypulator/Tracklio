@@ -1,6 +1,7 @@
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 using Tracklio.Shared.Domain.Dto;
 using Tracklio.Shared.Domain.Dto.Users;
 using Tracklio.Shared.Domain.Entities;
@@ -27,7 +28,7 @@ public class GetUser : ISlice
             })
             .WithName("UserProfile")
             .WithTags("Users")
-            .WithOpenApi(operation => new(operation)
+            .WithOpenApi(operation => new OpenApiOperation(operation)
             {
                 Summary = "Get User Profile",
                 Description =
@@ -35,7 +36,8 @@ public class GetUser : ISlice
                 OperationId = "UserProfile",
             })
             .Produces<GenericResponse<UserResponse>>(StatusCodes.Status200OK)
-            .Produces<GenericResponse<string>>(StatusCodes.Status400BadRequest);
+            .Produces<GenericResponse<string>>(StatusCodes.Status400BadRequest)
+            .RequireAuthorization();
     }
 
     public record GetUserQuery(string UserId) : IRequest<GenericResponse<UserResponse>>;
@@ -63,7 +65,7 @@ public class GetUser : ISlice
             
             if (user == null)
             {
-                return GenericResponse<UserResponse>.Error(4004, "User not found");
+                return GenericResponse<UserResponse>.Error(404, "User not found");
             }
             
             var vehicleCount = await context.Vehicles.AsNoTracking().CountAsync(x => x.UserId == userId && x.IsActive, cancellationToken: cancellationToken);

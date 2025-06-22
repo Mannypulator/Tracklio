@@ -34,7 +34,8 @@ public sealed class ValidateRefreshToken : ISlice
                 OperationId = "RefreshToken"
             })
             .Produces<GenericResponse<string>>(StatusCodes.Status200OK)
-            .Produces<GenericResponse<string>>(StatusCodes.Status400BadRequest);
+            .Produces<GenericResponse<string>>(StatusCodes.Status400BadRequest)
+            .RequireAuthorization();
     }
 
     public class ValidateRefreshTokenCommand: IRequest<GenericResponse<LoginResponse>>
