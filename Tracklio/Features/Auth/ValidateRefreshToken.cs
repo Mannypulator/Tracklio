@@ -54,7 +54,7 @@ public sealed class ValidateRefreshToken : ISlice
     public class ValidateRefreshTokenCommandHandler(ITokenService tokenService, RepositoryContext context): IRequestHandler<ValidateRefreshTokenCommand,
         GenericResponse<LoginResponse>>
     {
-        public async Task<GenericResponse<LoginResponse>> Handle(ValidateRefreshTokenCommand request, CancellationToken cancellationToken)
+        public async Task<GenericResponse<LoginResponse?>> Handle(ValidateRefreshTokenCommand request, CancellationToken cancellationToken)
         {
            var refreshToken = await 
                 context

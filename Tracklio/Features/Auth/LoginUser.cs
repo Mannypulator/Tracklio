@@ -48,7 +48,7 @@ public class LoginUser : ISlice
     )
         : IRequestHandler<LoginUser.LoginCommand, GenericResponse<LoginResponse>>
     {
-        public async Task<GenericResponse<LoginResponse>> Handle(LoginCommand request,
+        public async Task<GenericResponse<LoginResponse?>> Handle(LoginCommand request,
             CancellationToken cancellationToken)
         {
             var user = context

@@ -90,7 +90,7 @@ public class UpdateUser : ISlice
 
         public class UpdateUserCommandHandler(RepositoryContext context) : IRequestHandler<UpdateUserCommand, GenericResponse<string>>
         {
-            public async Task<GenericResponse<string>> Handle(UpdateUserCommand request, CancellationToken cancellationToken)
+            public async Task<GenericResponse<string?>> Handle(UpdateUserCommand request, CancellationToken cancellationToken)
             {
                 if (request.UserId == Guid.Empty)
                 {

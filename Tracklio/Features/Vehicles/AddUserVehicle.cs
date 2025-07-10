@@ -119,7 +119,7 @@ public sealed class AddUserVehicle : ISlice
 
     public class AddVehicleCommandHandler(RepositoryContext context) : IRequestHandler<AddVehicleCommand, GenericResponse<string>>
     {
-        public async Task<GenericResponse<string>> Handle(AddVehicleCommand request, CancellationToken cancellationToken)
+        public async Task<GenericResponse<string?>> Handle(AddVehicleCommand request, CancellationToken cancellationToken)
         {
             if (request.UserId == Guid.Empty)
             {

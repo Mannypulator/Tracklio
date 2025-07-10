@@ -52,7 +52,7 @@ public sealed class GetUserVehicles : ISlice
 
     public class GetUserVehiclesQueryHandler(RepositoryContext context) : IRequestHandler<GetUserVehiclesQuery, GenericResponse<IEnumerable<VehicleResponse>>>
     {
-        public async Task<GenericResponse<IEnumerable<VehicleResponse>>> Handle(GetUserVehiclesQuery request, CancellationToken cancellationToken)
+        public async Task<GenericResponse<IEnumerable<VehicleResponse>?>> Handle(GetUserVehiclesQuery request, CancellationToken cancellationToken)
         {
             if (request.UserId == Guid.Empty)
             {

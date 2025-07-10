@@ -57,7 +57,7 @@ public class GetUser : ISlice
 
     public class GetUserHandler(RepositoryContext context) : IRequestHandler<GetUserQuery, GenericResponse<UserResponse>>
     {
-        public async Task<GenericResponse<UserResponse>> Handle(GetUserQuery request, CancellationToken cancellationToken)
+        public async Task<GenericResponse<UserResponse?>> Handle(GetUserQuery request, CancellationToken cancellationToken)
         {
             var userId = Guid.Parse(request.UserId);
             

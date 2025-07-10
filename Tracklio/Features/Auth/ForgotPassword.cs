@@ -49,7 +49,7 @@ public class ForgotPassword : ISlice
     public class ForgetPasswordCommandHandler(RepositoryContext context, IEmailService emailService, IOtpService otpService) 
         : IRequestHandler<ForgetPasswordCommand, GenericResponse<string>>
     {
-        public async Task<GenericResponse<string>> Handle(ForgetPasswordCommand request, CancellationToken cancellationToken)
+        public async Task<GenericResponse<string?>> Handle(ForgetPasswordCommand request, CancellationToken cancellationToken)
         {
             var exitingUser  = context
                     .Users

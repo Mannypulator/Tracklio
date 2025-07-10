@@ -54,7 +54,7 @@ public class ResetPassword : ISlice
     
     public class ResetPasswordHandler(RepositoryContext context, IOtpService otpService) : IRequestHandler<ResetPasswordCommand, GenericResponse<string>>
     {
-        public async Task<GenericResponse<string>> Handle(ResetPasswordCommand request, CancellationToken cancellationToken)
+        public async Task<GenericResponse<string?>> Handle(ResetPasswordCommand request, CancellationToken cancellationToken)
         {
            var user = await context.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Email.Trim() == request.Email.Trim(), cancellationToken: cancellationToken);
 

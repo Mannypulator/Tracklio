@@ -43,7 +43,7 @@ public sealed class EmailVerification : ISlice
 
     public class VerifyEmailCommandHandler(RepositoryContext context) : IRequestHandler<EmailVerification.VerifyEmailCommand, GenericResponse<string>>
     {
-        public async Task<GenericResponse<string>> Handle(VerifyEmailCommand request, CancellationToken cancellationToken)
+        public async Task<GenericResponse<string?>> Handle(VerifyEmailCommand request, CancellationToken cancellationToken)
         {
                        
             var otpExists = await context

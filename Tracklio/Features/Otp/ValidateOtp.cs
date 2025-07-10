@@ -40,7 +40,7 @@ public class ValidateOtp : ISlice
 
     public class ValidateOtpCommandHandler(RepositoryContext context) : IRequestHandler<ValidateOtpCommand, GenericResponse<string>>
     {
-        public async Task<GenericResponse<string>> Handle(ValidateOtpCommand request, CancellationToken cancellationToken)
+        public async Task<GenericResponse<string?>> Handle(ValidateOtpCommand request, CancellationToken cancellationToken)
         {
             var existingUser = await context
                 .Users

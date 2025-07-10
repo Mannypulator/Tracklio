@@ -42,7 +42,7 @@ public sealed class SendOtp : ISlice
     
     public class SendOtpCommandHandler(RepositoryContext context, IEmailService emailService) : IRequestHandler<SendOtpCommand, GenericResponse<string>>
     {
-        public async Task<GenericResponse<string>> Handle(SendOtpCommand request, CancellationToken cancellationToken)
+        public async Task<GenericResponse<string?>> Handle(SendOtpCommand request, CancellationToken cancellationToken)
         {
             var existingUser = await context
                 .Users

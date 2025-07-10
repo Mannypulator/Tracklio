@@ -42,7 +42,7 @@ public class DeleteUser : ISlice
 
     public class DeleteUserCommandHandler(RepositoryContext context) : IRequestHandler<DeleteUserCommand, GenericResponse<string>>
     {
-        public async  Task<GenericResponse<string>> Handle(DeleteUserCommand request, CancellationToken cancellationToken)
+        public async  Task<GenericResponse<string?>> Handle(DeleteUserCommand request, CancellationToken cancellationToken)
         {
             if (!Guid.TryParse(request.UserId, out var userId))
             {

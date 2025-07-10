@@ -17,12 +17,13 @@ public class GenericResponse<T>
         };
     }
 
-    public static GenericResponse<T> Error(int statusCode, string message)
+    public static GenericResponse<T?> Error(int statusCode, string message, T? data = default)
     {
-        return new GenericResponse<T>
+        return new GenericResponse<T?>
         {
             StatusCode = statusCode,
-            Message = message
+            Message = message,
+            Data = data
 
         };
     }

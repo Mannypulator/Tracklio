@@ -53,7 +53,7 @@ public sealed class RegisterUser : ISlice
         IEmailService emailService
         ): IRequestHandler<RegisterUser.RegisterUserCommand, GenericResponse<string>>
     {
-        public async Task<GenericResponse<string>> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
+        public async Task<GenericResponse<string?>> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
         {
             var existingUser = await context
                 .Users
@@ -62,7 +62,7 @@ public sealed class RegisterUser : ISlice
             
             if (existingUser is not null)
             {
-                return GenericResponse<string>.Error(409, "Otp address is already registered.");
+                return GenericResponse<string>.Error(409, "Otp address is already registered.", existingUser.EmailConfirmed.ToString());
             }
 
             var userToBeSaved = request.MapToEntity();

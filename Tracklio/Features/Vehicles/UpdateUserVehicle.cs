@@ -92,7 +92,7 @@ public class UpdateUserVehicle : ISlice
 
     public class UpdateVehicleCommandHandler(RepositoryContext context) : IRequestHandler<UpdateVehicleCommand, GenericResponse<string>>
     {
-        public async Task<GenericResponse<string>> Handle(UpdateVehicleCommand request, CancellationToken cancellationToken)
+        public async Task<GenericResponse<string?>> Handle(UpdateVehicleCommand request, CancellationToken cancellationToken)
         {
             if (request.UserId == Guid.Empty)
             {

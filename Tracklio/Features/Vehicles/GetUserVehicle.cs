@@ -64,7 +64,7 @@ public class GetUserVehicle : ISlice
 
     public class GetVehicleQueryHandler(RepositoryContext context) : IRequestHandler<GetVehicleQuery, GenericResponse<VehicleResponse>>
     {
-        public async  Task<GenericResponse<VehicleResponse>> Handle(GetVehicleQuery request, CancellationToken cancellationToken)
+        public async  Task<GenericResponse<VehicleResponse?>> Handle(GetVehicleQuery request, CancellationToken cancellationToken)
         {
             if (request.UserId == Guid.Empty)
             {

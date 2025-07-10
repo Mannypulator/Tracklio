@@ -50,7 +50,7 @@ public class RemoveUserVehicle : ISlice
 
     public class RemoveUserVehicleCommandHandler(RepositoryContext context) : IRequestHandler<RemoveUserVehicleCommand, GenericResponse<string>>
     {
-        public async Task<GenericResponse<string>> Handle(RemoveUserVehicleCommand request, CancellationToken cancellationToken)
+        public async Task<GenericResponse<string?>> Handle(RemoveUserVehicleCommand request, CancellationToken cancellationToken)
         {
             if (request.UserId == Guid.Empty)
             {
