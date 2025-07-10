@@ -44,4 +44,6 @@ public class User
     public virtual ICollection<Vehicle> Vehicles { get; set; } = new List<Vehicle>();
     public virtual NotificationPreferences? NotificationPreferences { get; set; }
     public virtual ICollection<UserRefreshToken> RefreshTokens { get; set; } = new List<UserRefreshToken>();
+
+    public virtual ICollection<UserDevice> Devices { get; set; } = new List<UserDevice>();
 }

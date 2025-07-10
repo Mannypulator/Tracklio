@@ -1,6 +1,9 @@
 using System.Reflection;
+using System.Security.Claims;
 using System.Text;
 using FluentValidation;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -71,6 +74,18 @@ public static class ServiceCollectionExtension
                     ValidAudience = configuration["JwtSettings:Audience"],
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JwtSettings:SecretKey"]!))
                 };
+            })
+            .AddGoogle(GoogleDefaults.AuthenticationScheme, options =>
+            {
+                var g = configuration.GetSection("Authentication:Google");
+                options.ClientId     = g["ClientId"]!;
+                options.ClientSecret = g["ClientSecret"]!;
+                options.CallbackPath = g["CallbackPath"]!;
+                options.Scope.Add("profile");
+                options.Scope.Add("email");
+                options.ClaimActions.MapJsonKey(ClaimTypes.GivenName, "given_name");
+                options.ClaimActions.MapJsonKey(ClaimTypes.Surname,   "family_name");
+                options.ClaimActions.MapJsonKey("picture", "picture", "url");
             });
         
         services.AddAuthorization(options =>
@@ -122,8 +137,10 @@ public static class ServiceCollectionExtension
     {
         var jwtSettings = configuration.GetSection("JwtSettings");
         var smtpSettings = configuration.GetSection("SmtpSettings");
+        var authenticationSettings = configuration.GetSection("Authentication");
         services.Configure<JwtSettings>(jwtSettings);
         services.Configure<SmtpSettings>(smtpSettings);
+        services.Configure<Authentication>(authenticationSettings);
 
 
         return services;

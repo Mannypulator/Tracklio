@@ -62,7 +62,7 @@ public sealed class RegisterUser : ISlice
             
             if (existingUser is not null)
             {
-                return GenericResponse<string>.Error(409, "Otp address is already registered.");
+                return GenericResponse<string>.Error(409, "Email address is already registered.", existingUser.EmailConfirmed.ToString());
             }
 
             var userToBeSaved = request.MapToEntity();
