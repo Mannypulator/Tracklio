@@ -17,6 +17,8 @@ public class RepositoryContext : DbContext
     public DbSet<UserRefreshToken> UserRefreshTokens { get; set; }
     public DbSet<SyncLog> SyncLogs { get; set; }
     public DbSet<UserOtp> UserOtps => Set<UserOtp>();
+    
+    public DbSet<UserDevice> UserDevices => Set<UserDevice>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -44,6 +46,10 @@ public class RepositoryContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasMany(e => e.RefreshTokens)
+                .WithOne(e => e.User)
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasMany(e => e.Devices)
                 .WithOne(e => e.User)
                 .HasForeignKey(e => e.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
@@ -117,6 +123,17 @@ public class RepositoryContext : DbContext
             entity.Property(e => e.Token).IsRequired();
             entity.Property(e => e.CreatedByIp).HasMaxLength(100);
             entity.Property(e => e.RevokedByIp).HasMaxLength(100);
+        });
+        
+        // UserDevice Configuration
+        
+        modelBuilder.Entity<UserDevice>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.DeviceToken).IsUnique();
+            entity.HasIndex(e => new { e.UserId, e.IsActive });
+            entity.Property(e => e.DeviceToken).IsRequired();
+            entity.Property(e => e.Platform).HasMaxLength(100);
         });
 
         // SyncLog Configuration

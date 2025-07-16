@@ -17,7 +17,7 @@ public class GenericResponse<T>
         };
     }
 
-    public static GenericResponse<T?> Error(int statusCode, string message, T? data = default)
+    public static GenericResponse<T> Error(int statusCode, string message, T data = default!)
     {
         return new GenericResponse<T?>
         {
@@ -27,4 +27,6 @@ public class GenericResponse<T>
 
         };
     }
+    
+    
 }
