@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using FluentValidation;
 using MediatR;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Tracklio.Shared.Domain.Dto;
 using Tracklio.Shared.Persistence;
@@ -14,8 +15,8 @@ public sealed class EmailVerification : ISlice
     {
         endpointRouteBuilder.MapPost("api/v1/auth/verify-email", async (
                 HttpContext httpContext,
-                VerifyEmailCommand request,
-                IMediator mediator,
+                [FromBody] VerifyEmailCommand request,
+                [FromServices] IMediator mediator,
                 CancellationToken ct
             ) =>
             {

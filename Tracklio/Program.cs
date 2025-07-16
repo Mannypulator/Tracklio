@@ -15,6 +15,8 @@ builder.Services.RegisterAppConfigurations(builder.Configuration);
 builder.Services.RegisterInfrastructureServices();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.RegisterCors();
+builder.Services.AddHttpClient();
+builder.Services.RegisterFirebase(builder.Configuration);
 builder.Services.AddProblemDetails();
 
 var app = builder.Build();

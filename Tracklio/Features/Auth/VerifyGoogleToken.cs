@@ -1,5 +1,6 @@
 using System.Text.Json;
 using MediatR;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
@@ -19,8 +20,8 @@ public class VerifyGoogleToken : ISlice
     public void AddEndpoint(IEndpointRouteBuilder endpointRouteBuilder)
     {
         endpointRouteBuilder.MapPost("api/v1/auth/google-signin", async (
-                GoogleTokenRequestCommand request,
-                IMediator mediator,
+               [FromBody] GoogleTokenRequestCommand request, 
+                [FromServices] IMediator mediator,
                 CancellationToken ct
             ) =>
             {

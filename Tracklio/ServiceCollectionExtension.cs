@@ -1,7 +1,10 @@
 using System.Reflection;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
+using FirebaseAdmin;
 using FluentValidation;
+using Google.Apis.Auth.OAuth2;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -16,6 +19,7 @@ using Tracklio.Shared.Metrics;
 using Tracklio.Shared.Persistence;
 using Tracklio.Shared.Security;
 using Tracklio.Shared.Services;
+using Tracklio.Shared.Services.Notification;
 using Tracklio.Shared.Services.Otp;
 using Tracklio.Shared.Services.Token;
 using Tracklio.Shared.Slices;
@@ -175,6 +179,29 @@ public static class ServiceCollectionExtension
         });
         
         return services;
+    }
+
+    public static IServiceCollection RegisterFirebase(this IServiceCollection services, IConfiguration configuration)
+    {
+        var firebaseConfig = configuration.GetSection("Firebase");
+        var serviceAccountKey = firebaseConfig.GetSection("ServiceAccountKey").Get<Dictionary<string, object>>();
+        if (serviceAccountKey != null)
+        {
+            var keyJson = JsonSerializer.Serialize(serviceAccountKey);
+            FirebaseApp.Create(new AppOptions()
+            {
+                Credential = GoogleCredential.FromJson(keyJson),
+                ProjectId = firebaseConfig["ProjectId"]
+            });
+        }
+        else
+        {
+            throw new InvalidOperationException("Firebase service account key not configured properly");
+        }
+
+        services.AddScoped<IFirebaseService, FirebaseService>();
+        return services;
+        
     }
 
 }

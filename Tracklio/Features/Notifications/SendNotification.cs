@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using FirebaseAdmin.Messaging;
@@ -21,10 +22,13 @@ public class SendNotification : ISlice
     {
         endpointRouteBuilder.MapPost("api/v1/notifications/send", async (
                 SendNotificationCommand request,
+                ClaimsPrincipal claims,
                 IMediator mediator,
                 CancellationToken ct
             ) =>
             {
+                var userId = claims.GetUserIdAsGuid();
+                request.UserId = userId;
                 var response = await mediator.Send(request, ct);
                 return response.ReturnedResponse();
             })
@@ -60,6 +64,10 @@ public class SendNotification : ISlice
 
         public async Task<GenericResponse<NotificationResponse>> Handle(SendNotificationCommand request, CancellationToken cancellationToken)
         {
+            if (request.UserId == Guid.Empty)
+            {
+                return GenericResponse<NotificationResponse>.Error(401, "User is not authorized");
+            }
             var userDevice = await context.UserDevices.FirstOrDefaultAsync(x => x.UserId == request.UserId, cancellationToken: cancellationToken);
             var response = await firebaseService.SendNotificationAsync(request.MapToDto(userDevice.DeviceToken));
             return !response.Success 

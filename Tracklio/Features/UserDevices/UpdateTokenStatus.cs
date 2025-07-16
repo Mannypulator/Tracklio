@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Tracklio.Shared.Domain.Dto;
 using Tracklio.Shared.Persistence;
@@ -11,8 +12,8 @@ public class UpdateTokenStatus : ISlice
     public void AddEndpoint(IEndpointRouteBuilder endpointRouteBuilder)
     {
         endpointRouteBuilder.MapGet("api/v1/devices/update-token-status", async (
-                UpdateTokenStatusCommand request,
-                IMediator mediator,
+                [FromBody] UpdateTokenStatusCommand request,
+                [FromServices] IMediator mediator,
                 CancellationToken ct
             ) =>
             {
