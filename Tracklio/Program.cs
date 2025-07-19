@@ -18,6 +18,7 @@ builder.Services.RegisterCors();
 builder.Services.AddHttpClient();
 builder.Services.RegisterFirebase(builder.Configuration);
 builder.Services.AddProblemDetails();
+builder.Configuration.AddEnvironmentVariables();
 
 var app = builder.Build();
 
