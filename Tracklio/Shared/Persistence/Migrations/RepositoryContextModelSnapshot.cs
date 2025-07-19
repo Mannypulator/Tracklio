@@ -66,7 +66,7 @@ namespace Tracklio.Shared.Persistence
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("NotificationPreferences");
+                    b.ToTable("NotificationPreferences", (string)null);
                 });
 
             modelBuilder.Entity("Tracklio.Shared.Domain.Entities.ParkingTicket", b =>
@@ -160,7 +160,7 @@ namespace Tracklio.Shared.Persistence
 
                     b.HasIndex("VRM", "VehicleId");
 
-                    b.ToTable("ParkingTickets");
+                    b.ToTable("ParkingTickets", (string)null);
                 });
 
             modelBuilder.Entity("Tracklio.Shared.Domain.Entities.SyncLog", b =>
@@ -215,7 +215,7 @@ namespace Tracklio.Shared.Persistence
 
                     b.HasIndex("DataProvider", "StartedAt");
 
-                    b.ToTable("SyncLogs");
+                    b.ToTable("SyncLogs", (string)null);
                 });
 
             modelBuilder.Entity("Tracklio.Shared.Domain.Entities.TicketAction", b =>
@@ -249,7 +249,7 @@ namespace Tracklio.Shared.Persistence
 
                     b.HasIndex("TicketId", "ActionDate");
 
-                    b.ToTable("TicketActions");
+                    b.ToTable("TicketActions", (string)null);
                 });
 
             modelBuilder.Entity("Tracklio.Shared.Domain.Entities.User", b =>
@@ -260,11 +260,6 @@ namespace Tracklio.Shared.Persistence
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Otp")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
 
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("boolean");
@@ -284,6 +279,11 @@ namespace Tracklio.Shared.Persistence
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Otp")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -308,7 +308,7 @@ namespace Tracklio.Shared.Persistence
                     b.HasIndex("Otp")
                         .IsUnique();
 
-                    b.ToTable("Auth");
+                    b.ToTable("Auth", (string)null);
                 });
 
             modelBuilder.Entity("Tracklio.Shared.Domain.Entities.UserOtp", b =>
@@ -320,18 +320,18 @@ namespace Tracklio.Shared.Persistence
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Otp")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("OneTimePassword")
                         .IsRequired()
                         .HasMaxLength(7)
                         .HasColumnType("character varying(7)");
 
+                    b.Property<string>("Otp")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
 
-                    b.ToTable("UserOtps");
+                    b.ToTable("UserOtps", (string)null);
                 });
 
             modelBuilder.Entity("Tracklio.Shared.Domain.Entities.UserRefreshToken", b =>
@@ -374,7 +374,7 @@ namespace Tracklio.Shared.Persistence
 
                     b.HasIndex("UserId", "IsRevoked");
 
-                    b.ToTable("UserRefreshTokens");
+                    b.ToTable("UserRefreshTokens", (string)null);
                 });
 
             modelBuilder.Entity("Tracklio.Shared.Domain.Entities.Vehicle", b =>
@@ -421,7 +421,7 @@ namespace Tracklio.Shared.Persistence
 
                     b.HasIndex("VRM", "UserId");
 
-                    b.ToTable("Vehicles");
+                    b.ToTable("Vehicles", (string)null);
                 });
 
             modelBuilder.Entity("Tracklio.Shared.Domain.Entities.NotificationPreferences", b =>
