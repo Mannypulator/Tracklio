@@ -28,7 +28,7 @@ namespace Tracklio;
 
 public static class ServiceCollectionExtension
 {
-    public static IServiceCollection RegisterApplicationServices(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection RegisterApplicationServices(this IServiceCollection services)
     {
         services.RegisterSlices();
         var currentAssembly = Assembly.GetExecutingAssembly();
@@ -36,34 +36,67 @@ public static class ServiceCollectionExtension
         services.AddMediatR(cfg =>
         {
             cfg.RegisterServicesFromAssemblies(currentAssembly)
-            .RegisterServicesFromAssemblies(currentAssembly)
+                .RegisterServicesFromAssemblies(currentAssembly)
                 .AddOpenRequestPreProcessor(typeof(LoggingBehaviour<>))
                 .AddOpenBehavior(typeof(ModelValidationBehaviour<,>))
                 .AddOpenBehavior(typeof(HandlerPerformanceMetricBehaviour<,>));
         });
+
         services.AddValidatorsFromAssembly(currentAssembly);
         services.AddSingleton<HandlerPerformanceMetric>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
+
+        var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING");
+        Console.WriteLine($"[DEBUG] CONNECTION_STRING = {connectionString}");
+        if (string.IsNullOrWhiteSpace(connectionString))
+            throw new InvalidOperationException("CONNECTION_STRING environment variable is missing.");
+
         services.AddHealthChecks()
             .AddDbContextCheck<RepositoryContext>()
-            .AddNpgSql(configuration.GetConnectionString("TracklioDbConnection")!)
+            .AddNpgSql(connectionString)
             .AddCheck("api-health", () => HealthCheckResult.Healthy("API is running"));
-            
+
         return services;
     }
+
 
     public static IServiceCollection RegisterPersistenceServices(
         this IServiceCollection services,
         IConfiguration configuration)
     {
+        var isDevelopment = configuration.GetValue<bool>("ApplicationSettings:IsDevelopment");
+        var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING");
+
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            if (isDevelopment)
+            {
+                connectionString = configuration.GetConnectionString("TracklioDbConnection");
+            }
+
+            if (string.IsNullOrWhiteSpace(connectionString))
+                throw new InvalidOperationException("Database connection string is missing. Check environment variables or appsettings.");
+        }
+
         services.AddDbContext<RepositoryContext>(options =>
-            options.UseNpgsql(
-                configuration.GetConnectionString("TracklioDbConnection")));
+            options.UseNpgsql(connectionString));
+
         return services;
     }
-    
+
+
+
     public static IServiceCollection RegisterJwtServices(this IServiceCollection services, IConfiguration configuration)
     {
+        var jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER");
+        var jwtAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE");
+        var jwtSecretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY");
+
+        if (string.IsNullOrWhiteSpace(jwtIssuer) || string.IsNullOrWhiteSpace(jwtAudience) ||
+            string.IsNullOrWhiteSpace(jwtSecretKey))
+        {
+            throw new InvalidOperationException("Missing JWT environment variables");
+        }
 
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
@@ -74,34 +107,44 @@ public static class ServiceCollectionExtension
                     ValidateAudience = true,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
-                    ValidIssuer = configuration["JwtSettings:Issuer"],
-                    ValidAudience = configuration["JwtSettings:Audience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JwtSettings:SecretKey"]!))
+                    ValidIssuer = jwtIssuer,
+                    ValidAudience = jwtAudience,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecretKey))
                 };
             })
             .AddGoogle(GoogleDefaults.AuthenticationScheme, options =>
             {
-                var g = configuration.GetSection("Authentication:Google");
-                options.ClientId     = g["ClientId"]!;
-                options.ClientSecret = g["ClientSecret"]!;
-                options.CallbackPath = g["CallbackPath"]!;
+                var googleClientId = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID");
+                var googleClientSecret = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_SECRET");
+                var googleCallbackPath = Environment.GetEnvironmentVariable("GOOGLE_CALLBACK_PATH");
+
+                if (string.IsNullOrWhiteSpace(googleClientId) || string.IsNullOrWhiteSpace(googleClientSecret) ||
+                    string.IsNullOrWhiteSpace(googleCallbackPath))
+                    throw new InvalidOperationException("Missing Google authentication environment variables");
+
+                options.ClientId = googleClientId;
+                options.ClientSecret = googleClientSecret;
+                options.CallbackPath = googleCallbackPath;
+
                 options.Scope.Add("profile");
                 options.Scope.Add("email");
+
                 options.ClaimActions.MapJsonKey(ClaimTypes.GivenName, "given_name");
-                options.ClaimActions.MapJsonKey(ClaimTypes.Surname,   "family_name");
+                options.ClaimActions.MapJsonKey(ClaimTypes.Surname, "family_name");
                 options.ClaimActions.MapJsonKey("picture", "picture", "url");
             });
-        
+
         services.AddAuthorization(options =>
         {
             options.AddPolicy(PoliciesConstant.AdminOnly, policy => policy.RequireRole(nameof(UserRole.Admin)));
-            options.AddPolicy(PoliciesConstant.MotoristOrAdmin, policy => policy.RequireRole(nameof(UserRole.Motorist),nameof(UserRole.Admin)));
-            options.AddPolicy(PoliciesConstant.MotoristOnly, policy => policy.RequireRole( nameof(UserRole.Motorist)));
+            options.AddPolicy(PoliciesConstant.MotoristOrAdmin,
+                policy => policy.RequireRole(nameof(UserRole.Motorist), nameof(UserRole.Admin)));
+            options.AddPolicy(PoliciesConstant.MotoristOnly, policy => policy.RequireRole(nameof(UserRole.Motorist)));
         });
 
         return services;
     }
-    
+
     public static IServiceCollection RegisterSwaggerServices(this IServiceCollection services)
     {
         services.AddEndpointsApiExplorer();
@@ -113,9 +156,9 @@ public static class ServiceCollectionExtension
                 In = ParameterLocation.Header,
                 Description = "Please enter JWT with Bearer into field (e.g., Bearer {token})",
                 Name = "Authorization",
-                Type = SecuritySchemeType.Http, 
-                Scheme = "bearer", 
-                BearerFormat = "JWT" 
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+                BearerFormat = "JWT"
             });
             c.AddSecurityRequirement(new OpenApiSecurityRequirement
             {
@@ -128,27 +171,60 @@ public static class ServiceCollectionExtension
                             Id = "Bearer"
                         }
                     },
-                    [] 
+                    []
                 }
             });
         });
 
         return services;
     }
-    
-    public static IServiceCollection RegisterAppConfigurations(this IServiceCollection services,
-        IConfiguration configuration)
-    {
-        var jwtSettings = configuration.GetSection("JwtSettings");
-        var smtpSettings = configuration.GetSection("SmtpSettings");
-        var authenticationSettings = configuration.GetSection("Authentication");
-        services.Configure<JwtSettings>(jwtSettings);
-        services.Configure<SmtpSettings>(smtpSettings);
-        services.Configure<Authentication>(authenticationSettings);
 
+    public static IServiceCollection RegisterAppConfigurations(this IServiceCollection services, IConfiguration configuration)
+    {
+        var jwtSettings = new JwtSettings
+        {
+            Issuer    = Environment.GetEnvironmentVariable("JWT_ISSUER")!,
+            Audience  = Environment.GetEnvironmentVariable("JWT_AUDIENCE")!,
+            SecretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY")!,
+            ExpireMinutes = int.Parse(Environment.GetEnvironmentVariable("JWT_EXPIRE_MINUTES")!)
+        };
+
+        var smtpSettings = new SmtpSettings
+        {
+            UserName     = Environment.GetEnvironmentVariable("SMTP_USERNAME")!,
+            Password     = Environment.GetEnvironmentVariable("SMTP_PASSWORD")!,
+            DisplayName  = Environment.GetEnvironmentVariable("SMTP_DISPLAY_NAME")!,
+            Server       = Environment.GetEnvironmentVariable("SMTP_SERVER")!,
+            Port         = Environment.GetEnvironmentVariable("SMTP_PORT")!
+        };
+
+        var authentication = new Authentication
+        {
+            Google = new Shared.Configurations.Google
+            {
+                ClientId     = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID")!,
+                ClientSecret = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_SECRET")!,
+                CallbackPath = Environment.GetEnvironmentVariable("GOOGLE_CALLBACK_PATH")!
+            }
+        };
+
+        services.Configure<JwtSettings>(_ => { _.Issuer = jwtSettings.Issuer; _.Audience = jwtSettings.Audience; _.SecretKey = jwtSettings.SecretKey;
+            _.ExpireMinutes = jwtSettings.ExpireMinutes;
+        });
+        services.Configure<SmtpSettings>(_ => {
+            _.UserName    = smtpSettings.UserName;
+            _.Password    = smtpSettings.Password;
+            _.DisplayName = smtpSettings.DisplayName;
+            _.Server      = smtpSettings.Server;
+            _.Port        = smtpSettings.Port;
+        });
+        services.Configure<Authentication>(_ => {
+            _.Google = authentication.Google;
+        });
 
         return services;
     }
+
 
     public static IServiceCollection RegisterInfrastructureServices(this IServiceCollection services)
     {
@@ -164,12 +240,12 @@ public static class ServiceCollectionExtension
         {
             options.AddPolicy("AllowSpecificOrigins", policy =>
             {
-                policy.WithOrigins("https://localhost:3000", "https://yourdomain.com") 
+                policy.WithOrigins("https://localhost:3000", "https://yourdomain.com")
                     .AllowAnyHeader()
                     .AllowAnyMethod()
-                    .AllowCredentials(); 
+                    .AllowCredentials();
             });
-            
+
             options.AddPolicy("AllowAll", policy =>
             {
                 policy.AllowAnyOrigin()
@@ -177,31 +253,44 @@ public static class ServiceCollectionExtension
                     .AllowAnyMethod();
             });
         });
-        
+
         return services;
     }
 
     public static IServiceCollection RegisterFirebase(this IServiceCollection services, IConfiguration configuration)
     {
-        var firebaseConfig = configuration.GetSection("Firebase");
-        var serviceAccountKey = firebaseConfig.GetSection("ServiceAccountKey").Get<Dictionary<string, object>>();
-        if (serviceAccountKey != null)
+        var serviceAccountKey = new Dictionary<string, object?>
         {
-            var keyJson = JsonSerializer.Serialize(serviceAccountKey);
-            FirebaseApp.Create(new AppOptions()
+            { "type", Environment.GetEnvironmentVariable("FIREBASE_TYPE") },
+            { "project_id", Environment.GetEnvironmentVariable("FIREBASE_PROJECT_ID") },
+            { "private_key_id", Environment.GetEnvironmentVariable("FIREBASE_PRIVATE_KEY_ID") },
+            { "private_key", Environment.GetEnvironmentVariable("FIREBASE_PRIVATE_KEY")?.Replace("\\n", "\n") },
+            { "client_email", Environment.GetEnvironmentVariable("FIREBASE_CLIENT_EMAIL") },
+            { "client_id", Environment.GetEnvironmentVariable("FIREBASE_CLIENT_ID") },
+            { "auth_uri", Environment.GetEnvironmentVariable("FIREBASE_AUTH_URI") },
+            { "token_uri", Environment.GetEnvironmentVariable("FIREBASE_TOKEN_URI") },
             {
-                Credential = GoogleCredential.FromJson(keyJson),
-                ProjectId = firebaseConfig["ProjectId"]
-            });
-        }
-        else
+                "auth_provider_x509_cert_url",
+                Environment.GetEnvironmentVariable("FIREBASE_AUTH_PROVIDER_X509_CERT_CURL")
+            },
+            { "client_x509_cert_url", Environment.GetEnvironmentVariable("FIREBASE_CLIENT_X509_CERT_CURL") },
+            { "universe_domain", Environment.GetEnvironmentVariable("FIREBASE_UNIVERSE_DOMAIN") }
+        };
+
+        // Optional: Validate required fields
+        if (serviceAccountKey.Values.Any(v => string.IsNullOrWhiteSpace(v as string)))
+            throw new InvalidOperationException("Missing one or more Firebase environment variables.");
+
+
+        var keyJson = JsonSerializer.Serialize(serviceAccountKey);
+
+        FirebaseApp.Create(new AppOptions()
         {
-            throw new InvalidOperationException("Firebase service account key not configured properly");
-        }
+            Credential = GoogleCredential.FromJson(keyJson),
+            ProjectId = Environment.GetEnvironmentVariable("FIREBASE_PROJECT_ID")
+        });
 
         services.AddScoped<IFirebaseService, FirebaseService>();
         return services;
-        
     }
-
 }

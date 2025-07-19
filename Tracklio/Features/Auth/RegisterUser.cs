@@ -45,13 +45,13 @@ public sealed class RegisterUser : ISlice
         string LastName,
         string PhoneNumber,
         string ConfirmPassword
-    ): IRequest<GenericResponse<string>>;
+    ): IRequest<GenericResponse<string?>>;
     
     public sealed class RegisterUserHandler(
         RepositoryContext context,
         ITokenService tokenService,
         IEmailService emailService
-        ): IRequestHandler<RegisterUser.RegisterUserCommand, GenericResponse<string>>
+        ): IRequestHandler<RegisterUser.RegisterUserCommand, GenericResponse<string?>>
     {
         public async Task<GenericResponse<string?>> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
         {
@@ -62,7 +62,7 @@ public sealed class RegisterUser : ISlice
             
             if (existingUser is not null)
             {
-                return GenericResponse<string>.Error(409, "Email address is already registered.", existingUser.EmailConfirmed.ToString());
+                return GenericResponse<string?>.Error(409, "Email address is already registered.", existingUser.EmailConfirmed.ToString());
             }
 
             var userToBeSaved = request.MapToEntity();
@@ -103,7 +103,7 @@ public sealed class RegisterUser : ISlice
 
             await emailService.SendEmailAsync(request.Email, "VERIFY EMAIL", emailBody);
             
-            return GenericResponse<string>.Success( "Successfully created user", userToBeSaved.Id.ToString());
+            return GenericResponse<string?>.Success( "Successfully created user", userToBeSaved.Id.ToString());
         }
     }
 

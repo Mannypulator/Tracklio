@@ -9,7 +9,7 @@ using Tracklio.Shared.Persistence;
 
 #nullable disable
 
-namespace Tracklio.Shared.Persistence
+namespace Tracklio.Shared.Persistence.Migrations
 {
     [DbContext(typeof(RepositoryContext))]
     [Migration("20250617071259_add_updateat_user")]

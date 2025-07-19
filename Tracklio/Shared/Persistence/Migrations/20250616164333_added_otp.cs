@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace Tracklio.Shared.Persistence
+namespace Tracklio.Shared.Persistence.Migrations
 {
     /// <inheritdoc />
     public partial class added_otp : Migration

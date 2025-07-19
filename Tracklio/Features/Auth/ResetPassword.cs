@@ -34,7 +34,7 @@ public class ResetPassword : ISlice
             .Produces<GenericResponse<string>>(StatusCodes.Status400BadRequest);
     }
     
-    public record ResetPasswordCommand(string Otp, string Email, string Password): IRequest<GenericResponse<string>>;
+    public record ResetPasswordCommand(string Otp, string Email, string Password): IRequest<GenericResponse<string?>>;
 
     public class ResetPasswordCommandValidator : AbstractValidator<ResetPasswordCommand>
     {
@@ -52,7 +52,7 @@ public class ResetPassword : ISlice
         }
     }
     
-    public class ResetPasswordHandler(RepositoryContext context, IOtpService otpService) : IRequestHandler<ResetPasswordCommand, GenericResponse<string>>
+    public class ResetPasswordHandler(RepositoryContext context, IOtpService otpService) : IRequestHandler<ResetPasswordCommand, GenericResponse<string?>>
     {
         public async Task<GenericResponse<string?>> Handle(ResetPasswordCommand request, CancellationToken cancellationToken)
         {
@@ -60,14 +60,14 @@ public class ResetPassword : ISlice
 
            if (user == null)
            {
-               return GenericResponse<string>.Error(404, "User not found");
+               return GenericResponse<string?>.Error(404, "User not found");
            }
            
            var isOtpValid = await otpService.ValidateOtpAsync(request.Email, request.Otp, cancellationToken);
 
            if (!isOtpValid)
            {
-               return GenericResponse<string>.Error(403, "Invalid OTP");
+               return GenericResponse<string?>.Error(403, "Invalid OTP");
            }
            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
            user.UpdatedAt = DateTime.UtcNow;
@@ -81,7 +81,7 @@ public class ResetPassword : ISlice
            
          
            
-           return GenericResponse<string>.Success("Password reset was done successfully", null!);
+           return GenericResponse<string?>.Success("Password reset was done successfully", null!);
            
         }
     }
