@@ -12,6 +12,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Refit;
+using Tracklio.Features.MOT;
 using Tracklio.Shared.Behaviours;
 using Tracklio.Shared.Configurations;
 using Tracklio.Shared.Domain.Enums;
@@ -19,6 +21,8 @@ using Tracklio.Shared.Metrics;
 using Tracklio.Shared.Persistence;
 using Tracklio.Shared.Security;
 using Tracklio.Shared.Services;
+using Tracklio.Shared.Services.DVLA;
+using Tracklio.Shared.Services.MOT;
 using Tracklio.Shared.Services.Notification;
 using Tracklio.Shared.Services.Otp;
 using Tracklio.Shared.Services.Token;
@@ -228,9 +232,37 @@ public static class ServiceCollectionExtension
 
     public static IServiceCollection RegisterInfrastructureServices(this IServiceCollection services)
     {
+        
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IOtpService, OtpService>();
+        services.AddRefitClient<IMotTokenApiClient>()
+            .ConfigureHttpClient(c =>
+            {
+                c.BaseAddress = new Uri(Environment.GetEnvironmentVariable("MOT_TOKEN_BASE_URL")!);
+           
+            });
+        
+        services.AddRefitClient<IMotHistoryApiClient>()
+            .ConfigureHttpClient(c =>
+            {
+                c.BaseAddress = new Uri(Environment.GetEnvironmentVariable("MOT_HISTORY_BASE_URL")!);
+                c.DefaultRequestHeaders.Add("X-API-KEY", Environment.GetEnvironmentVariable("DVLA_API_KEY"));
+                
+            });
+        
+        services.AddRefitClient<IDvlaApiClient>()
+            .ConfigureHttpClient(c =>
+            {
+                c.BaseAddress = new Uri(Environment.GetEnvironmentVariable("DVLA_BASE_URL")!);
+                c.DefaultRequestHeaders.Add("x-api-key", Environment.GetEnvironmentVariable("DVLA_API_KEY"));
+                c.DefaultRequestHeaders.Add("User-Agent", "MyApp/1.0");
+                c.Timeout = TimeSpan.FromSeconds(30);
+            });
+        
+        services.AddSingleton<MotConfiguration>();
+        services.AddScoped<MotHistoryHandler>();
+        
         return services;
     }
 
