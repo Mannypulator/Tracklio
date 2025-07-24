@@ -12,7 +12,7 @@ public class GetVehicleHistory : ISlice
 {
     public void AddEndpoint(IEndpointRouteBuilder endpointRouteBuilder)
     {
-        endpointRouteBuilder.MapGet("api/v2/mot/history/{registration}", 
+        endpointRouteBuilder.MapGet("api/v2/mot/history/reg/{registration}", 
                 async (
                     [FromRoute] string registration,
                     [FromServices] MotHistoryHandler handler,
@@ -68,12 +68,18 @@ public class MotHistoryHandler
 
             // Get OAuth token
             var tokenResult = await GetAccessTokenAsync(cancellationToken);
+            
+            _logger.LogInformation($"Token Result: {tokenResult}");
+            
             if (tokenResult.IsFailure)
             {
                 return Results.BadRequest(tokenResult.Error);
             }
             
             var historyResult = await GetMotHistoryAsync(registration, tokenResult.AccessToken, cancellationToken);
+            
+            _logger.LogInformation($"History Result: {historyResult}");
+            
             if (historyResult.IsFailure)
             {
                 return historyResult.StatusCode == 404 

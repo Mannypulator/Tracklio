@@ -11,7 +11,7 @@ public class GetVehicleHistoryByVin : ISlice
 {
     public void AddEndpoint(IEndpointRouteBuilder endpointRouteBuilder)
     {
-        endpointRouteBuilder.MapGet("api/v2/mot/history/{vin}",
+        endpointRouteBuilder.MapGet("api/v2/mot/history/vin/{vin}",
             async (
                     [FromRoute] string vin,
                     [FromServices] IMediator mediator,
@@ -63,6 +63,8 @@ public class GetVehicleHistoryByVin : ISlice
                     ),
                     cancellationToken
                 );
+            
+            logger.LogInformation($"Token reponse: {tokenResponse}");
 
             if (!tokenResponse.IsSuccessful)
             {
@@ -70,6 +72,8 @@ public class GetVehicleHistoryByVin : ISlice
             }
             
             var motHistoryResponse = await motHistoryApiClient.GetVehicleHistoryByVinAsync(request.Vin, tokenResponse.Content.AccessToken, cancellationToken);
+            
+            logger.LogInformation($"motHistoryResponse: {motHistoryResponse}");
 
             if (!motHistoryResponse.IsSuccessful)
             {
