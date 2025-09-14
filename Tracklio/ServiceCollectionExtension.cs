@@ -228,6 +228,14 @@ public static class ServiceCollectionExtension
             _.Google = authentication.Google;
         });
 
+        services.Configure<StripeSettings>(_ =>
+        {
+            _.SecretKey = Environment.GetEnvironmentVariable("STRIPE_SECRET_KEY") ?? string.Empty;
+            _.PublishableKey = Environment.GetEnvironmentVariable("STRIPE_PUBLISHABLE_KEY") ?? string.Empty;
+            _.WebhookSecret = Environment.GetEnvironmentVariable("STRIPE_WEBHOOK_SECRET") ?? string.Empty;
+            _.WebhookEndpoint = Environment.GetEnvironmentVariable("STRIPE_WEBHOOK_ENDPOINT") ?? "/api/webhooks/stripe";
+        });
+
         return services;
     }
 
