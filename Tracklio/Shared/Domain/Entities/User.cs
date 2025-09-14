@@ -36,14 +36,21 @@ public class User
     [MaxLength(20)]
     public string? PhoneNumber { get; set; }
 
+    public bool HasSubscription { get; set; } = false;
+    public string? ProfileImage { get; set; }
+
     public bool EmailConfirmed { get; set; } = false;
 
     public bool PhoneNumberConfirmed { get; set; } = false;
 
-    // Navigation properties
     public virtual ICollection<Vehicle> Vehicles { get; set; } = new List<Vehicle>();
     public virtual NotificationPreferences? NotificationPreferences { get; set; }
     public virtual ICollection<UserRefreshToken> RefreshTokens { get; set; } = new List<UserRefreshToken>();
 
     public virtual ICollection<UserDevice> Devices { get; set; } = new List<UserDevice>();
+
+    public virtual ICollection<UserSubscription> Subscriptions { get; set; } = new List<UserSubscription>();
+
+    // Add this collection
+    public virtual ICollection<PaymentTransaction> PaymentTransactions { get; set; } = new List<PaymentTransaction>();
 }

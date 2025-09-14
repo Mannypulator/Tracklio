@@ -13,6 +13,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Refit;
+using Stripe;
 using Tracklio.Features.MOT;
 using Tracklio.Shared.Behaviours;
 using Tracklio.Shared.Configurations;
@@ -25,6 +26,7 @@ using Tracklio.Shared.Services.DVLA;
 using Tracklio.Shared.Services.MOT;
 using Tracklio.Shared.Services.Notification;
 using Tracklio.Shared.Services.Otp;
+using Tracklio.Shared.Services.Stripe;
 using Tracklio.Shared.Services.Token;
 using Tracklio.Shared.Slices;
 
@@ -234,8 +236,9 @@ public static class ServiceCollectionExtension
     {
         
         services.AddScoped<IEmailService, EmailService>();
-        services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<ITokenService, Shared.Services.Token.TokenService>();
         services.AddScoped<IOtpService, OtpService>();
+        services.AddScoped<IStripeService, StripeService>();
         services.AddRefitClient<IMotTokenApiClient>()
             .ConfigureHttpClient(c =>
             {
@@ -262,6 +265,7 @@ public static class ServiceCollectionExtension
         
         services.AddSingleton<MotConfiguration>();
         services.AddScoped<MotHistoryHandler>();
+        StripeConfiguration.ApiKey = Environment.GetEnvironmentVariable("STRIPE_SECRET_KEY");
         
         return services;
     }

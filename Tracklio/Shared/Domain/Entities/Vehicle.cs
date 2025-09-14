@@ -24,7 +24,8 @@ public class Vehicle
     [Required]
     public Guid UserId { get; set; }
 
-    public DateTime RegisteredAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime? UpdatedAt { get; set; } = DateTime.UtcNow;
 
     public bool IsActive { get; set; } = true;
 

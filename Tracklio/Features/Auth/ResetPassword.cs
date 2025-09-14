@@ -71,15 +71,14 @@ public class ResetPassword : ISlice
            }
            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
            user.UpdatedAt = DateTime.UtcNow;
-           await  context.SaveChangesAsync(cancellationToken);
+           context.Users.Update(user);
+           await context.SaveChangesAsync(cancellationToken);
            
            await context.UserRefreshTokens
                .Where(t => t.UserId == user.Id && !t.IsRevoked)
                .ExecuteUpdateAsync(setters => setters
                    .SetProperty(t => t.IsRevoked, true)
                    .SetProperty(t => t.RevokedAt, DateTime.UtcNow), cancellationToken: cancellationToken);
-           
-         
            
            return GenericResponse<string?>.Success("Password reset was done successfully", null!);
            

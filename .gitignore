@@ -486,3 +486,9 @@ $RECYCLE.BIN/
 *.txt
 C:\Logs/
 logs/
+
+# Ignore all appsettings files (including appsettings.Development.json, appsettings.Production.json, etc.)
+appsettings*.json
+
+# Ignore launchSettings.json (used by Visual Studio and Rider)
+**/Properties/launchSettings.json

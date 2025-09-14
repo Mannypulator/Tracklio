@@ -12,24 +12,24 @@ public class GetVehicleHistory : ISlice
 {
     public void AddEndpoint(IEndpointRouteBuilder endpointRouteBuilder)
     {
-        endpointRouteBuilder.MapGet("api/v2/mot/history/reg/{registration}", 
-                async (
-                    [FromRoute] string registration,
-                    [FromServices] MotHistoryHandler handler,
-                    CancellationToken ct
-                ) => await handler.HandleAsync(registration, ct))
-            .WithName("GetVehicleMotHistory")
-            .WithTags("MOT")
-            .WithOpenApi(operation => new OpenApiOperation(operation)
-            {
-                Summary = "Get vehicle MOT history ",
-                Description = "Retrieve MOT history for a vehicle by registration number using improved handler pattern.",
-                OperationId = "GetVehicleMotHistory"
-            })
-            .Produces<GenericResponse<VehicleMotHistory>>(StatusCodes.Status200OK)
-            .Produces<GenericResponse<string>>(StatusCodes.Status400BadRequest)
-            .Produces<GenericResponse<string>>(StatusCodes.Status404NotFound)
-            .Produces<ProblemDetails>(StatusCodes.Status500InternalServerError);
+        endpointRouteBuilder.MapGet("api/v1/mot/history/reg/{registration}",
+                    async (
+                        [FromRoute] string registration,
+                        [FromServices] MotHistoryHandler handler,
+                        CancellationToken ct
+                    ) => await handler.HandleAsync(registration, ct))
+                .WithName("GetVehicleMotHistory")
+                .WithTags("MOT")
+                .WithOpenApi(operation => new OpenApiOperation(operation)
+                {
+                    Summary = "Get vehicle MOT history ",
+                    Description = "Retrieve MOT history for a vehicle by registration number using improved handler pattern.",
+                    OperationId = "GetVehicleMotHistory"
+                })
+                .Produces<GenericResponse<VehicleMotHistory>>(StatusCodes.Status200OK)
+                .Produces<GenericResponse<string>>(StatusCodes.Status400BadRequest)
+                .Produces<GenericResponse<string>>(StatusCodes.Status404NotFound)
+                .Produces<ProblemDetails>(StatusCodes.Status500InternalServerError);
     }
 }
 
@@ -68,30 +68,30 @@ public class MotHistoryHandler
 
             // Get OAuth token
             var tokenResult = await GetAccessTokenAsync(cancellationToken);
-            
+
             _logger.LogInformation($"Token Result: {tokenResult}");
-            
+
             if (tokenResult.IsFailure)
             {
                 return Results.BadRequest(tokenResult.Error);
             }
-            
+
             var historyResult = await GetMotHistoryAsync(registration, tokenResult.AccessToken, cancellationToken);
-            
+
             _logger.LogInformation($"History Result: {historyResult}");
-            
+
             if (historyResult.IsFailure)
             {
-                return historyResult.StatusCode == 404 
+                return historyResult.StatusCode == 404
                     ? Results.NotFound(historyResult.Error)
                     : Results.BadRequest(historyResult.Error);
             }
 
             _logger.LogInformation("Successfully retrieved MOT history for registration: {Registration}", registration);
-            
+
             return Results.Ok(
                 GenericResponse<VehicleMotHistory>.Success(
-                    "Vehicle history retrieved successfully", 
+                    "Vehicle history retrieved successfully",
                     historyResult.Data
                 )
             );
@@ -99,7 +99,7 @@ public class MotHistoryHandler
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unexpected error processing MOT history request for registration: {Registration}", registration);
-            
+
             return Results.Problem(
                 detail: ex.Message,
                 statusCode: 500,
@@ -114,7 +114,7 @@ public class MotHistoryHandler
         {
             var tokenResponse = await _motTokenApiClient.GetTokenAsync(
                 _config.TenantId,
-                new TokenRequest(_config.GrantType, _config.ClientId, _config.ClientSecret,_config.Scope),
+                new TokenRequest(_config.GrantType, _config.ClientId, _config.ClientSecret, _config.Scope),
                 cancellationToken
             );
 
@@ -138,17 +138,17 @@ public class MotHistoryHandler
         try
         {
             var motHistoryResponse = await _motHistoryApiClient.GetVehicleHistoryAsync(
-                registration, 
-                accessToken, 
+                registration,
+                accessToken,
                 cancellationToken
             );
 
             if (!motHistoryResponse.IsSuccessful)
             {
                 var statusCode = (int)motHistoryResponse.Error.StatusCode;
-                var errorMessage = ExtractErrorMessage(motHistoryResponse.Error?.Content, 
+                var errorMessage = ExtractErrorMessage(motHistoryResponse.Error?.Content,
                     $"Vehicle history not found for registration: {registration}");
-                
+
                 return HistoryResult.Failure(
                     GenericResponse<string>.Error(statusCode, errorMessage),
                     statusCode
@@ -180,7 +180,7 @@ public class MotHistoryHandler
         }
     }
 
-   
+
 
     // Result types for better error handling
     private record TokenResult(bool IsFailure, string AccessToken, GenericResponse<string>? Error)

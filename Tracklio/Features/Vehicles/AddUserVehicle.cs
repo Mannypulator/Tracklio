@@ -155,7 +155,7 @@ public static partial class VehicleMapping
             Make = dto.Make,
             IsActive = true,
             Model = dto.Model,
-            RegisteredAt = DateTime.UtcNow,
+            CreatedAt = DateTime.UtcNow,
             Year = dto.Year
         };
     }

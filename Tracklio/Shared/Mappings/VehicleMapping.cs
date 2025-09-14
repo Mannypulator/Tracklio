@@ -17,7 +17,7 @@ public static partial class VehicleMapping
             IsActive = entity.IsActive,
             LastSyncAt = entity.LastSyncAt,
             Make = entity.Make,
-            RegisteredAt = entity.RegisteredAt,
+            RegisteredAt = entity.CreatedAt,
             TotalOutstandingAmount = 0,
             TotalTicketCount = 0,
             UserId = entity.UserId,

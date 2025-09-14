@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Tracklio.Shared.Persistence;
@@ -11,9 +12,11 @@ using Tracklio.Shared.Persistence;
 namespace Tracklio.Shared.Persistence.Migrations
 {
     [DbContext(typeof(RepositoryContext))]
-    partial class RepositoryContextModelSnapshot : ModelSnapshot
+    [Migration("20250913193324_seed_admin_user")]
+    partial class seed_admin_user
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -324,8 +327,8 @@ namespace Tracklio.Shared.Persistence.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("3b39e583-69e3-43c7-9938-a70c9c3abb23"),
-                            CreatedAt = new DateTime(2025, 9, 13, 19, 49, 39, 278, DateTimeKind.Utc).AddTicks(8030),
+                            Id = new Guid("5311b1ce-9985-4930-bcd9-a57d4afc0bdb"),
+                            CreatedAt = new DateTime(2025, 9, 13, 19, 33, 22, 929, DateTimeKind.Utc).AddTicks(3000),
                             Currency = "GBP",
                             Description = "Covers one vehicle",
                             DisplayName = "Freemium",
@@ -336,12 +339,12 @@ namespace Tracklio.Shared.Persistence.Migrations
                             Name = "freemium",
                             PriceMonthly = 0m,
                             PriceYearly = 0m,
-                            UpdatedAt = new DateTime(2025, 9, 13, 19, 49, 39, 278, DateTimeKind.Utc).AddTicks(7940)
+                            UpdatedAt = new DateTime(2025, 9, 13, 19, 33, 22, 929, DateTimeKind.Utc).AddTicks(2850)
                         },
                         new
                         {
-                            Id = new Guid("b78cf67d-6fe0-4c67-b283-e58b82e12211"),
-                            CreatedAt = new DateTime(2025, 9, 13, 19, 49, 39, 278, DateTimeKind.Utc).AddTicks(8050),
+                            Id = new Guid("df27316d-64a7-4dfa-9bcb-5607be01b7dd"),
+                            CreatedAt = new DateTime(2025, 9, 13, 19, 33, 22, 929, DateTimeKind.Utc).AddTicks(3010),
                             Currency = "GBP",
                             Description = "Ads free, up to 5 vehicles",
                             DisplayName = "Solo plan",
@@ -352,12 +355,12 @@ namespace Tracklio.Shared.Persistence.Migrations
                             Name = "solo",
                             PriceMonthly = 4.99m,
                             PriceYearly = 59.88m,
-                            UpdatedAt = new DateTime(2025, 9, 13, 19, 49, 39, 278, DateTimeKind.Utc).AddTicks(8040)
+                            UpdatedAt = new DateTime(2025, 9, 13, 19, 33, 22, 929, DateTimeKind.Utc).AddTicks(3000)
                         },
                         new
                         {
-                            Id = new Guid("18b36c97-498f-4874-8bf8-c0a643e385e5"),
-                            CreatedAt = new DateTime(2025, 9, 13, 19, 49, 39, 278, DateTimeKind.Utc).AddTicks(8060),
+                            Id = new Guid("9e15229e-779a-4d54-963b-5ff0fae73536"),
+                            CreatedAt = new DateTime(2025, 9, 13, 19, 33, 22, 929, DateTimeKind.Utc).AddTicks(3020),
                             Currency = "GBP",
                             Description = "For families with up to 10 vehicles",
                             DisplayName = "Family plan",
@@ -368,12 +371,12 @@ namespace Tracklio.Shared.Persistence.Migrations
                             Name = "family",
                             PriceMonthly = 14.99m,
                             PriceYearly = 179.88m,
-                            UpdatedAt = new DateTime(2025, 9, 13, 19, 49, 39, 278, DateTimeKind.Utc).AddTicks(8060)
+                            UpdatedAt = new DateTime(2025, 9, 13, 19, 33, 22, 929, DateTimeKind.Utc).AddTicks(3020)
                         },
                         new
                         {
-                            Id = new Guid("35861097-7563-49a3-9650-a0ffbce9b09b"),
-                            CreatedAt = new DateTime(2025, 9, 13, 19, 49, 39, 278, DateTimeKind.Utc).AddTicks(8070),
+                            Id = new Guid("5bd6b6d6-e231-4488-8d8e-ef8371f8b2a4"),
+                            CreatedAt = new DateTime(2025, 9, 13, 19, 33, 22, 929, DateTimeKind.Utc).AddTicks(3030),
                             Currency = "GBP",
                             Description = "For small businesses with up to 15 vehicles",
                             DisplayName = "Fleet plan",
@@ -384,7 +387,7 @@ namespace Tracklio.Shared.Persistence.Migrations
                             Name = "fleet",
                             PriceMonthly = 0m,
                             PriceYearly = 0m,
-                            UpdatedAt = new DateTime(2025, 9, 13, 19, 49, 39, 278, DateTimeKind.Utc).AddTicks(8060)
+                            UpdatedAt = new DateTime(2025, 9, 13, 19, 33, 22, 929, DateTimeKind.Utc).AddTicks(3030)
                         });
                 });
 
@@ -567,19 +570,19 @@ namespace Tracklio.Shared.Persistence.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("bd81881f-d669-45fa-83ae-2a98539fac82"),
-                            CreatedAt = new DateTime(2025, 9, 13, 19, 49, 39, 518, DateTimeKind.Utc).AddTicks(4860),
+                            Id = new Guid("60f60b3e-58b6-47e0-a8a2-e3406d371bcf"),
+                            CreatedAt = new DateTime(2025, 9, 13, 19, 33, 23, 361, DateTimeKind.Utc).AddTicks(3030),
                             Email = "admin@example.com",
                             EmailConfirmed = true,
                             FirstName = "Elizabeth",
                             HasSubscription = false,
                             IsActive = true,
                             LastName = "Adegunwa",
-                            PasswordHash = "$2a$11$ZnIfJJdK3Q3TnustZ1fLL.8a6TASw3QV.JbaShdhCu.hJf.pAgMa2",
+                            PasswordHash = "$2a$11$w2Luq6QL/fZKQ5buGZBT4OudVQqgkuhZcFuqjj6sFP9GVHGhdRal.",
                             PhoneNumber = "+2348062841527",
                             PhoneNumberConfirmed = true,
                             Role = "Admin",
-                            UpdatedAt = new DateTime(2025, 9, 13, 19, 49, 39, 518, DateTimeKind.Utc).AddTicks(4870)
+                            UpdatedAt = new DateTime(2025, 9, 13, 19, 33, 23, 361, DateTimeKind.Utc).AddTicks(3030)
                         });
                 });
 
@@ -754,9 +757,6 @@ namespace Tracklio.Shared.Persistence.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
@@ -771,7 +771,7 @@ namespace Tracklio.Shared.Persistence.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
-                    b.Property<DateTime?>("UpdatedAt")
+                    b.Property<DateTime>("RegisteredAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("UserId")

@@ -8,11 +8,17 @@ public class RepositoryContextFactory : IDesignTimeDbContextFactory<RepositoryCo
 {
     public RepositoryContext CreateDbContext(string[] args)
     {
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json")
+            .AddJsonFile("appsettings.Development.json", optional: true)
+            .AddEnvironmentVariables()
+            .Build();
+
+        var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING") 
+                               ?? configuration.GetConnectionString("TracklioDbConnection");
+
         var optionsBuilder = new DbContextOptionsBuilder<RepositoryContext>();
-
-        // Load from environment or fallback for design-time
-        var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING");
-
         optionsBuilder.UseNpgsql(connectionString);
 
         return new RepositoryContext(optionsBuilder.Options);

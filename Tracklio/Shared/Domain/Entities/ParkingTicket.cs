@@ -52,6 +52,7 @@ public class ParkingTicket
     public string? AppealUrl { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime? UpdatedAt { get; set; }
 
     public DateTime? ResolvedAt { get; set; }
 
@@ -66,4 +67,5 @@ public class ParkingTicket
     // Navigation properties
     public virtual Vehicle Vehicle { get; set; } = null!;
     public virtual ICollection<TicketAction> Actions { get; set; } = new List<TicketAction>();
+    public virtual ICollection<TicketImage> Images { get; set; } = new List<TicketImage>();
 }
