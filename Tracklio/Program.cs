@@ -1,4 +1,5 @@
 using Tracklio;
+using Tracklio.Shared.Middleware;
 using Tracklio.Shared.Persistence;
 using Tracklio.Shared.Slices;
 
@@ -29,6 +30,9 @@ app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseCors("AllowAll");
+
+// Add request/response logging
+app.UseRequestResponseLogging();
 
 app.UseExceptionHandler();
 app.UseHttpsRedirection();
