@@ -42,14 +42,15 @@ public class RequestResponseLoggingMiddleware
         };
 
         _logger.LogInformation(
-            "HTTP Request Information:{NewLine}" +
-            "Schema: {Schema}{NewLine}" +
-            "Host: {Host}{NewLine}" +
-            "Path: {Path}{NewLine}" +
-            "QueryString: {QueryString}{NewLine}" +
-            "Headers: {Headers}{NewLine}" +
-            "Body: {Body}",
-            Environment.NewLine,
+            """
+            HTTP Request Information:
+            Schema: {Schema}
+            Host: {Host}
+            Path: {Path}
+            QueryString: {QueryString}
+            Headers: {Headers}
+            Body: {Body}
+            """,
             requestInfo.Schema,
             requestInfo.Host,
             requestInfo.Path,
@@ -83,11 +84,12 @@ public class RequestResponseLoggingMiddleware
         };
 
         _logger.LogInformation(
-            "HTTP Response Information:{NewLine}" +
-            "StatusCode: {StatusCode}{NewLine}" +
-            "Headers: {Headers}{NewLine}" +
-            "Body: {Body}",
-            Environment.NewLine,
+            """
+            HTTP Response Information:
+            StatusCode: {StatusCode}
+            Headers: {Headers}
+            Body: {Body}
+            """,
             responseInfo.StatusCode,
             System.Text.Json.JsonSerializer.Serialize(responseInfo.Headers),
             responseInfo.Body);
