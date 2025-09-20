@@ -1,4 +1,5 @@
 using Tracklio;
+using Tracklio.Shared.Persistence;
 using Tracklio.Shared.Slices;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -37,5 +38,7 @@ app.UseAuthorization();
 app.MapSliceEndpoints();
 app.MapHealthChecks("/health");
 
+// Seed the database
+DbSeeder.Seed(app.Services);
 
 app.Run();

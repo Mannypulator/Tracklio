@@ -79,6 +79,7 @@ public class GetUserVehicle : ISlice
             var vehicle = await context
                 .Vehicles
                 .AsNoTracking()
+                .Include(x => x.ParkingTickets)
                 .FirstOrDefaultAsync( x=> x.UserId == request.UserId && x.Id == vehicleId && x.IsActive, cancellationToken);
 
             if (vehicle is null)
