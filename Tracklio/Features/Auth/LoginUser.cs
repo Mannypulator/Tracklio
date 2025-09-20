@@ -35,8 +35,8 @@ public class LoginUser : ISlice
                     "Authenticates a user with email and password, returning a JWT token on success or an error message on failure.",
                 OperationId = "Login"
             })
-            .Produces<GenericResponse<string>>(StatusCodes.Status200OK)
-            .Produces<GenericResponse<string>>(StatusCodes.Status400BadRequest);
+            .Produces<GenericResponse<LoginResponse>>(StatusCodes.Status200OK)
+            .Produces<GenericResponse<LoginResponse>>(StatusCodes.Status400BadRequest);
     }
 
     public sealed record LoginCommand(string Email, string Password, bool RememberMe)
