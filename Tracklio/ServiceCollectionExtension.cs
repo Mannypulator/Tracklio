@@ -19,6 +19,7 @@ using Tracklio.Shared.Behaviours;
 using Tracklio.Shared.Configurations;
 using Tracklio.Shared.Domain.Enums;
 using Tracklio.Shared.Metrics;
+using Tracklio.Shared.Networking;
 using Tracklio.Shared.Persistence;
 using Tracklio.Shared.Security;
 using Tracklio.Shared.Services;
@@ -51,6 +52,11 @@ public static class ServiceCollectionExtension
         services.AddValidatorsFromAssembly(currentAssembly);
         services.AddSingleton<HandlerPerformanceMetric>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
+        services.AddScoped<IHttpService, HttpService>();
+        services.AddScoped<IMotService, MotService>();
+        services.AddHttpClient();
+        
+
 
         var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING");
         Console.WriteLine($"[DEBUG] CONNECTION_STRING = {connectionString}");

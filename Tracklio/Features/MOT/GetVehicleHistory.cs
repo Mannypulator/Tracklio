@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
 using Tracklio.Shared.Domain.Dto;
+using Tracklio.Shared.Networking;
 using Tracklio.Shared.Services.MOT;
 using Tracklio.Shared.Slices;
 
@@ -39,17 +40,20 @@ public class MotHistoryHandler
     private readonly IMotHistoryApiClient _motHistoryApiClient;
     private readonly ILogger<MotHistoryHandler> _logger;
     private readonly MotConfiguration _config;
+    private readonly IMotService _motService;
 
     public MotHistoryHandler(
         IMotTokenApiClient motTokenApiClient,
         IMotHistoryApiClient motHistoryApiClient,
         ILogger<MotHistoryHandler> logger,
-        MotConfiguration config)
+        MotConfiguration config,
+        IMotService motService)
     {
         _motTokenApiClient = motTokenApiClient;
         _motHistoryApiClient = motHistoryApiClient;
         _logger = logger;
         _config = config;
+        _motService = motService;
     }
 
     public async Task<IResult> HandleAsync(string registration, CancellationToken cancellationToken)
@@ -66,35 +70,20 @@ public class MotHistoryHandler
                 );
             }
 
-            // Get OAuth token
-            var tokenResult = await GetAccessTokenAsync(cancellationToken);
-
-            _logger.LogInformation($"Token Result: {tokenResult}");
-
-            if (tokenResult.IsFailure)
-            {
-                return Results.BadRequest(tokenResult.Error);
-            }
-
-            var historyResult = await GetMotHistoryAsync(registration, tokenResult.AccessToken, cancellationToken);
+            var historyResult = await _motService.GetVehicleHistoryByRegistrationAsync(registration, cancellationToken);
 
             _logger.LogInformation($"History Result: {historyResult}");
 
-            if (historyResult.IsFailure)
+            if (historyResult is null )
             {
-                return historyResult.StatusCode == 404
-                    ? Results.NotFound(historyResult.Error)
-                    : Results.BadRequest(historyResult.Error);
+                return Results.NotFound(
+                    GenericResponse<string>.Error(404, $"Vehicle history not found for registration: {registration}")
+                );
             }
 
             _logger.LogInformation("Successfully retrieved MOT history for registration: {Registration}", registration);
 
-            return Results.Ok(
-                GenericResponse<VehicleMotHistory>.Success(
-                    "Vehicle history retrieved successfully",
-                    historyResult.Data
-                )
-            );
+            return Results.Ok(GenericResponse<VehicleMotHistory>.Success("Success", historyResult));
         }
         catch (Exception ex)
         {
