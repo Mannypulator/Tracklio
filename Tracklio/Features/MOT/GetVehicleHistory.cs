@@ -138,12 +138,16 @@ public class MotHistoryHandler
     {
         try
         {
+
+            _logger.LogInformation("Fetching MOT history for registration: {Registration} with token {Token} and API key {ApiKey}", registration, accessToken, _config.ApiKey);
             var motHistoryResponse = await _motHistoryApiClient.GetVehicleHistoryAsync(
                 registration.Trim(),
                 accessToken,
                 _config.ApiKey,
                 cancellationToken
             );
+
+            _logger.LogInformation("MOT API response for registration {Registration}: {Response}", registration, motHistoryResponse);
 
             if (!motHistoryResponse.IsSuccessful)
             {
