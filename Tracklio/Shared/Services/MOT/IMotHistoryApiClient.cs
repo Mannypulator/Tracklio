@@ -50,19 +50,20 @@ public record MotApiError(
 public record MotDefect(
     [property: JsonPropertyName("text")] string Text,
     [property: JsonPropertyName("type")] string Type,
-    [property: JsonPropertyName("dangerous")] bool Dangerous
+    [property: JsonPropertyName("dangerous")] bool? Dangerous = null
 );
 
 public record MotTest(
     [property: JsonPropertyName("registrationAtTimeOfTest")] string? RegistrationAtTimeOfTest,
     [property: JsonPropertyName("completedDate")] DateTime CompletedDate,
     [property: JsonPropertyName("testResult")] string TestResult,
-    [property: JsonPropertyName("expiryDate")] DateOnly ExpiryDate,
-    [property: JsonPropertyName("odometerValue")] string OdometerValue,
-    [property: JsonPropertyName("odometerUnit")] string OdometerUnit,
-    [property: JsonPropertyName("odometerResultType")] string OdometerResultType,
+    // CRITICAL: expiryDate is null for failed/abandoned tests
+    [property: JsonPropertyName("expiryDate")] DateOnly? ExpiryDate,
+    [property: JsonPropertyName("odometerValue")] string? OdometerValue,
+    [property: JsonPropertyName("odometerUnit")] string? OdometerUnit,
+    [property: JsonPropertyName("odometerResultType")] string? OdometerResultType,
     [property: JsonPropertyName("motTestNumber")] string MotTestNumber,
-    [property: JsonPropertyName("dataSource")] string DataSource,
+    [property: JsonPropertyName("dataSource")] string? DataSource,
     [property: JsonPropertyName("location")] string? Location = null,
     [property: JsonPropertyName("defects")] MotDefect[]? Defects = null
 );
@@ -76,8 +77,8 @@ public record VehicleMotHistory(
     [property: JsonPropertyName("primaryColour")] string PrimaryColour,
     [property: JsonPropertyName("registrationDate")] DateOnly RegistrationDate,
     [property: JsonPropertyName("manufactureDate")] DateOnly ManufactureDate,
-    [property: JsonPropertyName("engineSize")] string EngineSize,
-    [property: JsonPropertyName("hasOutstandingRecall")] string HasOutstandingRecall,
+    [property: JsonPropertyName("engineSize")] string? EngineSize,
+    [property: JsonPropertyName("hasOutstandingRecall")] string? HasOutstandingRecall,
     [property: JsonPropertyName("motTests")] MotTest[] MotTests
 );
 
