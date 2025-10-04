@@ -1,3 +1,4 @@
+using System.Text.Json;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
@@ -43,6 +44,7 @@ public class GetVehicleHistoryByVin : ISlice
             IMotHistoryApiClient motHistoryApiClient,
             IMotTokenApiClient motTokenApiClient,
             MotConfiguration config,
+            IMotService motService,
             ILogger<MotHistoryHandler> logger
         )
         : IRequestHandler<GetVehicleHistoryByVinQuery, GenericResponse<VehicleMotHistory>>
@@ -53,34 +55,18 @@ public class GetVehicleHistoryByVin : ISlice
             {
                 return GenericResponse<VehicleMotHistory>.Error(400, "Vin is required");
             }
-            var tokenResponse = await motTokenApiClient.GetTokenAsync
-                (config.TenantId,
-                    new TokenRequest(
-                    config.GrantType,
-                    config.ClientId,
-                    config.ClientSecret,
-                    config.Scope
-                    ),
-                    cancellationToken
-                );
+           
 
-            logger.LogInformation($"Token reponse: {tokenResponse}");
+            var motHistoryResponse = await motService.GetVehicleHistoryByVinAsync(request.Vin, cancellationToken);
 
-            if (!tokenResponse.IsSuccessful)
+            logger.LogInformation($"motHistoryResponse: {JsonSerializer.Serialize(motHistoryResponse)}");
+
+            if (motHistoryResponse is null)
             {
-                return GenericResponse<VehicleMotHistory>.Error(400, tokenResponse.Error.Message);
+                return GenericResponse<VehicleMotHistory>.Error(404, "No MOT history found for the provided VIN");
             }
 
-            var motHistoryResponse = await motHistoryApiClient.GetVehicleHistoryByVinAsync(request.Vin, tokenResponse.Content.AccessToken, config.ApiKey, cancellationToken);
-
-            logger.LogInformation($"motHistoryResponse: {motHistoryResponse}");
-
-            if (!motHistoryResponse.IsSuccessful)
-            {
-                return GenericResponse<VehicleMotHistory>.Error(400, motHistoryResponse.Error.Message);
-            }
-
-            return GenericResponse<VehicleMotHistory>.Success("Success", motHistoryResponse.Content);
+            return GenericResponse<VehicleMotHistory>.Success("Success", motHistoryResponse);
         }
     }
 }
