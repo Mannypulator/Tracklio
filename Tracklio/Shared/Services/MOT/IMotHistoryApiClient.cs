@@ -10,7 +10,7 @@ public interface IMotHistoryApiClient
     Task<ApiResponse<VehicleMotHistory>> GetVehicleHistoryAsync(
         string registration,
         [Header("Authorization")] string authorization,
-        [Header("X-API-Key")] string apiKey,
+        [Header("X-Api-Key")] string apiKey,
         CancellationToken cancellationToken = default
     );
     
@@ -19,7 +19,7 @@ public interface IMotHistoryApiClient
     Task<ApiResponse<VehicleMotHistory>> GetVehicleHistoryByVinAsync(
         string vin,
         [Header("Authorization")] string authorization,
-        [Header("X-API-Key")] string apiKey,
+        [Header("X-Api-Key")] string apiKey,
         CancellationToken cancellationToken = default
     );
     
