@@ -124,7 +124,8 @@ public class MotHistoryHandler
                 return TokenResult.Failure(GenericResponse<string>.Error(500, errorMessage));
             }
 
-            return TokenResult.Success(tokenResponse.Content.AccessToken);
+
+            return TokenResult.Success($"Bearer {tokenResponse.Content.AccessToken}");
         }
         catch (Exception ex)
         {
@@ -138,7 +139,7 @@ public class MotHistoryHandler
         try
         {
             var motHistoryResponse = await _motHistoryApiClient.GetVehicleHistoryAsync(
-                registration,
+                registration.Trim(),
                 accessToken,
                 _config.ApiKey,
                 cancellationToken
