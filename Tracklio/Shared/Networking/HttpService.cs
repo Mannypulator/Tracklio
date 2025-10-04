@@ -9,10 +9,12 @@ namespace Tracklio.Shared.Networking;
 public class HttpService : IHttpService
 {
     private readonly IHttpClientFactory _httpClientFactory;
+    private readonly ILogger<HttpService> _logger;
 
-    public HttpService(IHttpClientFactory httpClientFactory)
+    public HttpService(IHttpClientFactory httpClientFactory, ILogger<HttpService> logger)
     {
         _httpClientFactory = httpClientFactory;
+        _logger = logger;
     }
 
     public async Task<T> SendPostRequest<T, U>(
@@ -42,8 +44,12 @@ public class HttpService : IHttpService
 
         var response = await client.SendAsync(httpRequestMessage);
 
+        _logger.LogInformation("POST {Url} responded with {StatusCode}", request.Url, response.StatusCode);
+
         // Read response content for debugging
         var responseContent = await response.Content.ReadAsStringAsync();
+
+        _logger.LogInformation("POST {Url} responded with {StatusCode} and content: {ResponseContent}", request.Url, response.StatusCode, responseContent);
 
         if (!response.IsSuccessStatusCode)
         {
@@ -70,12 +76,14 @@ public class HttpService : IHttpService
         }
 
         var response = await client.SendAsync(httpRequestMessage);
+        _logger.LogInformation("GET {Url} responded with {StatusCode}", request.Url, response.StatusCode);
         var responseContent = await response.Content.ReadAsStringAsync();
+
+        _logger.LogInformation("GET {Url} responded with {StatusCode} and content: {ResponseContent}", request.Url, response.StatusCode, responseContent);
 
         if (!response.IsSuccessStatusCode)
         {
-            throw new HttpRequestException(
-                $"Request to {request.Url} failed with status {response.StatusCode}. Response: {responseContent}");
+            return default!;
         }
 
         var result = JsonSerializer.Deserialize<T>(responseContent, new JsonSerializerOptions
