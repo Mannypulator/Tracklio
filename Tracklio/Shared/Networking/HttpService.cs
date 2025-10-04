@@ -58,13 +58,12 @@ public class HttpService : IHttpService
     }
 
     public async Task<T> SendGetRequest<T>(
-        GetRequest request,
-        Dictionary<string, string> headers)
+      GetRequest request,
+      Dictionary<string, string> headers)
     {
         var client = _httpClientFactory.CreateClient("Tracklio");
         var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, request.Url);
 
-        // Add headers to request
         foreach (var header in headers)
         {
             httpRequestMessage.Headers.TryAddWithoutValidation(header.Key, header.Value);
@@ -73,8 +72,21 @@ public class HttpService : IHttpService
         var response = await client.SendAsync(httpRequestMessage);
         var responseContent = await response.Content.ReadAsStringAsync();
 
-        return await response.Content.ReadFromJsonAsync<T>()
-            ?? throw new InvalidOperationException("Failed to deserialize response");
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new HttpRequestException(
+                $"Request to {request.Url} failed with status {response.StatusCode}. Response: {responseContent}");
+        }
+
+        var result = JsonSerializer.Deserialize<T>(responseContent, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
+            // Handle null values gracefully
+            NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString
+        });
+
+        return result ?? throw new InvalidOperationException("Failed to deserialize response");
     }
 
     public async Task<T> SendMultipartPostRequest<T>(
