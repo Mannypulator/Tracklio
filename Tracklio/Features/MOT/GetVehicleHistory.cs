@@ -140,6 +140,7 @@ public class MotHistoryHandler
             var motHistoryResponse = await _motHistoryApiClient.GetVehicleHistoryAsync(
                 registration,
                 accessToken,
+                _config.ApiKey,
                 cancellationToken
             );
 

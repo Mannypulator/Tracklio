@@ -10,6 +10,7 @@ public interface IMotHistoryApiClient
     Task<ApiResponse<VehicleMotHistory>> GetVehicleHistoryAsync(
         string registration,
         [Header("Authorization")] string authorization,
+        [Header("X-API-Key")] string apiKey,
         CancellationToken cancellationToken = default
     );
     
@@ -18,6 +19,7 @@ public interface IMotHistoryApiClient
     Task<ApiResponse<VehicleMotHistory>> GetVehicleHistoryByVinAsync(
         string vin,
         [Header("Authorization")] string authorization,
+        [Header("X-API-Key")] string apiKey,
         CancellationToken cancellationToken = default
     );
     
@@ -26,6 +28,7 @@ public interface IMotHistoryApiClient
     [Headers("Accept: application/json")]
     Task<ApiResponse<BulkDownloadResponse>> GetBulkDownloadLinksAsync(
         [Header("Authorization")] string authorization,
+        [Header("X-API-Key")] string apiKey,
         CancellationToken cancellationToken = default
     );
 
@@ -107,4 +110,5 @@ public class MotConfiguration
     public string ClientId { get; init; } = Environment.GetEnvironmentVariable("MOT_CLIENT_ID") ?? throw new InvalidOperationException("MOT_CLIENT_ID not configured");
     public string ClientSecret { get; init; } = Environment.GetEnvironmentVariable("MOT_CLIENT_SECRET") ?? throw new InvalidOperationException("MOT_CLIENT_SECRET not configured");
     public string Scope { get; init; } = Environment.GetEnvironmentVariable("MOT_SCOPE") ?? throw new InvalidOperationException("MOT_SCOPE not configured");
+    public string ApiKey { get; init; } = Environment.GetEnvironmentVariable("MOT_API_KEY") ?? throw new InvalidOperationException("MOT_API_KEY not configured");
 }

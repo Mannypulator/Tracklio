@@ -71,7 +71,7 @@ public class GetVehicleHistoryByVin : ISlice
                 return GenericResponse<VehicleMotHistory>.Error(400, tokenResponse.Error.Message);
             }
 
-            var motHistoryResponse = await motHistoryApiClient.GetVehicleHistoryByVinAsync(request.Vin, tokenResponse.Content.AccessToken, cancellationToken);
+            var motHistoryResponse = await motHistoryApiClient.GetVehicleHistoryByVinAsync(request.Vin, tokenResponse.Content.AccessToken, config.ApiKey, cancellationToken);
 
             logger.LogInformation($"motHistoryResponse: {motHistoryResponse}");
 
