@@ -42,6 +42,10 @@ public record VehicleDetails(
 );
 
 // Error response DTOs
+public record DvlaApiErrorResponse(
+    [property: JsonPropertyName("errors")] VehicleEnquiryError[] Errors
+);
+
 public record VehicleEnquiryError(
     [property: JsonPropertyName("status")] string Status,
     [property: JsonPropertyName("code")] string Code,

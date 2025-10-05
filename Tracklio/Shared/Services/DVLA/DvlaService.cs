@@ -8,8 +8,8 @@ namespace Tracklio.Shared.Services.DVLA;
 public class DvlaService(IHttpService httpService) : IDvlaService
 {
     public async Task<VehicleDetails> GetVehicleDetailsAsync(
-        string registrationNumber,
-        CancellationToken cancellationToken = default)
+    string registrationNumber,
+    CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(registrationNumber))
         {
@@ -41,7 +41,7 @@ public class DvlaService(IHttpService httpService) : IDvlaService
         }
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
         {
-            // Parse the DVLA error response
+            // Parse the DVLA error response - it returns an errors array
             var errorMatch = System.Text.RegularExpressions.Regex.Match(
                 ex.Message,
                 @"Response: ({.*})");
@@ -50,17 +50,24 @@ public class DvlaService(IHttpService httpService) : IDvlaService
             {
                 try
                 {
-                    var errorResponse = JsonSerializer.Deserialize<VehicleEnquiryError>(
+                    var errorResponse = JsonSerializer.Deserialize<DvlaApiErrorResponse>(
                         errorMatch.Groups[1].Value,
                         new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-                    throw new DvlaVehicleNotFoundException(
-                        registrationNumber,
-                        errorResponse?.Status,
-                        errorResponse?.Code);
+                    // Get the first error from the array
+                    var firstError = errorResponse?.Errors?.FirstOrDefault();
+
+                    if (firstError != null)
+                    {
+                        throw new DvlaVehicleNotFoundException(
+                            registrationNumber,
+                            firstError.Status,
+                            firstError.Code);
+                    }
                 }
                 catch (JsonException)
                 {
+                    // If we can't parse the error, throw a generic not found exception
                     throw new DvlaVehicleNotFoundException(registrationNumber, null, null);
                 }
             }
@@ -78,15 +85,20 @@ public class DvlaService(IHttpService httpService) : IDvlaService
             {
                 try
                 {
-                    var errorResponse = JsonSerializer.Deserialize<VehicleEnquiryError>(
+                    var errorResponse = JsonSerializer.Deserialize<DvlaApiErrorResponse>(
                         errorMatch.Groups[1].Value,
                         new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-                    throw new DvlaApiException(
-                        errorResponse?.Detail ?? "Invalid request to DVLA API",
-                        errorResponse?.Status,
-                        errorResponse?.Code,
-                        400);
+                    var firstError = errorResponse?.Errors?.FirstOrDefault();
+
+                    if (firstError != null)
+                    {
+                        throw new DvlaApiException(
+                            firstError.Detail ?? "Invalid request to DVLA API",
+                            firstError.Status,
+                            firstError.Code,
+                            400);
+                    }
                 }
                 catch (JsonException)
                 {
