@@ -2,10 +2,19 @@ namespace Tracklio.Shared.Domain.Exceptions;
 
 public class NotFoundException : BaseException
 {
+    private string? code1;
+    private int v;
+
     public NotFoundException(string message) : base(message) { }
     public NotFoundException(string message, string? code) : base(message, code) { }
     public NotFoundException(string resourceType, object id) 
         : base($"{resourceType} with ID '{id}' was not found", $"{resourceType.ToUpperInvariant()}_NOT_FOUND") { }
+
+    public NotFoundException(string message, string? code, string? code1, int v) : this(message, code)
+    {
+        this.code1 = code1;
+        this.v = v;
+    }
 }
 
 public class ForbiddenException : BaseException

@@ -54,6 +54,7 @@ public static class ServiceCollectionExtension
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IHttpService, HttpService>();
         services.AddScoped<IMotService, MotService>();
+        services.AddScoped<IDvlaService, DvlaService>();
         services.AddHttpClient();
         
 

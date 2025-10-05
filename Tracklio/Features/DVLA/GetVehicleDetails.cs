@@ -33,19 +33,19 @@ public class GetVehicleDetails : ISlice
     
     public record GetVehicleDetailsQuery(string RegistrationNumber): IRequest<GenericResponse<VehicleDetails>>;
     
-    public class GetVehicleDetailsQueryHandler(IDvlaApiClient dvlaApiClient) : IRequestHandler<GetVehicleDetailsQuery, GenericResponse<VehicleDetails>>
+    public class GetVehicleDetailsQueryHandler(IDvlaService dvlaService) : IRequestHandler<GetVehicleDetailsQuery, GenericResponse<VehicleDetails>>
     {
         public async Task<GenericResponse<VehicleDetails>> Handle(GetVehicleDetailsQuery request, CancellationToken cancellationToken)
         {
             var vehicleDetailsResponse =
-                await dvlaApiClient.GetVehicleDetailsAsync(new VehicleEnquiryRequest(request.RegistrationNumber), cancellationToken);
+                await dvlaService.GetVehicleDetailsAsync(request.RegistrationNumber, cancellationToken);
 
-            if (!vehicleDetailsResponse.IsSuccessful)
+            if (vehicleDetailsResponse == null)
             {
-                return GenericResponse<VehicleDetails>.Error(400, vehicleDetailsResponse.Error.Message);
+                return GenericResponse<VehicleDetails>.Error(404, "Vehicle not found");
             }
             
-            return GenericResponse<VehicleDetails>.Success("Success", vehicleDetailsResponse.Content);
+            return GenericResponse<VehicleDetails>.Success("Success", vehicleDetailsResponse);
         }
     }
 }

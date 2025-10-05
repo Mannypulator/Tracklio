@@ -66,6 +66,7 @@ public class GlobalExceptionHandler : IExceptionHandler
             OperationCanceledException => HandleOperationCancelledException(),
             JsonException jsonEx => HandleJsonException(jsonEx),
             NotSupportedException => HandleNotSupportedException(),
+            DvlaApiException dvlaEx => HandleDvlaApiException(dvlaEx),
             _ => HandleGenericException(exception, correlationId)
         };
     }
@@ -88,6 +89,24 @@ public class GlobalExceptionHandler : IExceptionHandler
         {
             StatusCode = (int)HttpStatusCode.BadRequest,
             Message = "Validation failed",
+            Data = errorData
+        };
+    }
+
+    private GenericResponse<object> HandleDvlaApiException(DvlaApiException ex)
+    {
+        var errorData = new
+        {
+            type = "DvlaApiError",
+            code = ex.Code,
+            status = ex.Status,
+            statusCode = ex.StatusCode
+        };
+
+        return new GenericResponse<object>
+        {
+            StatusCode = ex.StatusCode >= 400 && ex.StatusCode < 600 ? ex.StatusCode : (int)HttpStatusCode.BadGateway,
+            Message = "An error occurred while communicating with the DVLA service.",
             Data = errorData
         };
     }
