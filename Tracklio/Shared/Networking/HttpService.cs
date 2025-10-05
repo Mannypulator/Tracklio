@@ -53,8 +53,7 @@ public class HttpService : IHttpService
 
         if (!response.IsSuccessStatusCode)
         {
-            throw new HttpRequestException(
-                $"Request failed with status {response.StatusCode}. Response: {responseContent}");
+           return default!;
         }
 
         return JsonSerializer.Deserialize<T>(responseContent, new JsonSerializerOptions
