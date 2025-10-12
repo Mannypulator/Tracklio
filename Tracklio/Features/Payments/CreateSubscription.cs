@@ -55,6 +55,11 @@ public class CreateSubscription : ISlice
     {
         public async Task<GenericResponse<SubscriptionResponse>> Handle(CreateSubscriptionCommand request, CancellationToken cancellationToken)
         {
+            if (request.UserId == Guid.Empty)
+            {
+                return GenericResponse<SubscriptionResponse>.Error(400, "Invalid user ID.");
+            }   
+            
             var subscriptionResponse = await stripeService.CreateSubscriptionAsync(request.UserId, request.Subscription);
 
             if (subscriptionResponse == null)
