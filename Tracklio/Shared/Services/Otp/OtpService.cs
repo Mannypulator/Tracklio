@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Tracklio.EmailTemplates.Models;
 using Tracklio.Shared.Domain.Dto.Otp;
 using Tracklio.Shared.Domain.Entities;
 using Tracklio.Shared.Persistence;
@@ -10,20 +11,27 @@ public class OtpService(IEmailService emailService, RepositoryContext context) :
     public async Task<bool> SendOtpAsync(SendOtpRequest request, CancellationToken cancellationToken)
     {
         var code = Util.GenerateOtp();
-            
+
         var otp = new UserOtp()
         {
             OneTimePassword = code,
             Email = request.Email,
             CreatedAt = DateTime.UtcNow
         };
-        
-        var emailBody = $"Kindly use this Otp:{code} to validate your account";
-        
+
+        var user = await context.Users.FirstOrDefaultAsync(u => u.Email == request.Email, cancellationToken);
+
+        var emailModel = new EmailVerificationModel
+        {
+            CustomerName = user != null ? $"{user.FirstName} {user.LastName}" : "User",
+            VerificationCode = code,
+            ExpiryMinutes = 10
+        };
+
         await context.UserOtps.AddAsync(otp, cancellationToken);
         await context.SaveChangesAsync(cancellationToken);
-        
-        await emailService.SendEmailAsync(request.Email, request.Reason, emailBody);
+
+        await emailService.SendTemplatedEmailAsync(request.Email, request.Reason, "EmailVerification", emailModel);
         return true;
     }
 

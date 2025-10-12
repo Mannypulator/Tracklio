@@ -1,0 +1,16 @@
+@model Tracklio.EmailTemplates.Models.WelcomeEmailModel
+@{
+    Layout = "~/EmailTemplates/Views/_Layout.cshtml";
+    ViewBag.Title = "Welcome to Tracklio";
+    ViewBag.SupportEmail = Model.SupportEmail;
+    ViewBag.SupportPhone = Model.SupportPhone;
+}
+
+<h1>Welcome to Tracklio!</h1>
+
+<p class="greeting">Hi @Model.FirstName</p>
+
+<p class="message">
+    Thanks for signing up! Tracklio makes it simple to track, pay, and appeal parking tickets automatically.
+    Add your vehicle now to start receiving real-time PCN updates.
+</p>

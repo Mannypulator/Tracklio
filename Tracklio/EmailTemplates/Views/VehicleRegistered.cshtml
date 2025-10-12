@@ -1,0 +1,19 @@
+@model Tracklio.EmailTemplates.Models.VehicleRegisteredModel
+@{
+    Layout = "~/EmailTemplates/Views/_Layout.cshtml";
+    ViewBag.Title = "Your Vehicle Has Been Registered";
+    ViewBag.SupportEmail = Model.SupportEmail;
+    ViewBag.SupportPhone = Model.SupportPhone;
+}
+
+<h1>Your Vehicle Has Been<br>Registered</h1>
+
+<p class="greeting">Hi [@Model.FirstName]</p>
+
+<p class="message">
+    Your vehicle @Model.VehicleRegistration  – @Model.Make @Model.Model has been successfully added to Tracklio.
+</p>
+
+<p class="message">
+    You'll now receive notifications for any new PCNs.
+</p>

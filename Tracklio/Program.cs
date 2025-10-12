@@ -43,6 +43,6 @@ app.MapSliceEndpoints();
 app.MapHealthChecks("/health");
 
 // Seed the database
-DbSeeder.Seed(app.Services);
+// DbSeeder.Seed(app.Services);
 
 app.Run();

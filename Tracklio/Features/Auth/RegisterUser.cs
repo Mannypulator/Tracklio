@@ -2,6 +2,7 @@ using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using Tracklio.EmailTemplates.Models;
 using Tracklio.Shared.Domain.Dto;
 using Tracklio.Shared.Domain.Entities;
 using Tracklio.Shared.Domain.Enums;
@@ -95,14 +96,17 @@ public sealed class RegisterUser : ISlice
             
             await context.Users.AddAsync(userToBeSaved, cancellationToken);
             await context.SaveChangesAsync(cancellationToken);
-            
-            
-            var emailBody = $"Kindly use this Otp:{code} to validate your account";
-            
-            
 
-            await emailService.SendEmailAsync(request.Email, "VERIFY EMAIL", emailBody);
-            
+
+            var emailModel = new EmailVerificationModel
+            {
+                CustomerName = $"{request.FirstName} {request.LastName}",
+                VerificationCode = code,
+                ExpiryMinutes = 10
+            };
+
+            await emailService.SendTemplatedEmailAsync(request.Email, "Verify Your Email - Tracklio", "EmailVerification", emailModel);
+
             return GenericResponse<string?>.Success( "Successfully created user", userToBeSaved.Id.ToString());
         }
     }

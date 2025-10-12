@@ -24,9 +24,12 @@ using Tracklio.Shared.Persistence;
 using Tracklio.Shared.Security;
 using Tracklio.Shared.Services;
 using Tracklio.Shared.Services.DVLA;
+using Tracklio.Shared.Services.Email;
 using Tracklio.Shared.Services.MOT;
 using Tracklio.Shared.Services.Notification;
+using Tracklio.Shared.Services.OAuth;
 using Tracklio.Shared.Services.Otp;
+using Tracklio.Shared.Services.Pdf;
 using Tracklio.Shared.Services.Stripe;
 using Tracklio.Shared.Services.Token;
 using Tracklio.Shared.Slices;
@@ -55,6 +58,7 @@ public static class ServiceCollectionExtension
         services.AddScoped<IHttpService, HttpService>();
         services.AddScoped<IMotService, MotService>();
         services.AddScoped<IDvlaService, DvlaService>();
+        services.AddSingleton<IGoogleOAuthTokenProvider, GoogleOAuthTokenProvider>();
         services.AddHttpClient();
         
 
@@ -204,11 +208,12 @@ public static class ServiceCollectionExtension
 
         var smtpSettings = new SmtpSettings
         {
-            UserName     = Environment.GetEnvironmentVariable("SMTP_USERNAME")!,
-            Password     = Environment.GetEnvironmentVariable("SMTP_PASSWORD")!,
-            DisplayName  = Environment.GetEnvironmentVariable("SMTP_DISPLAY_NAME")!,
-            Server       = Environment.GetEnvironmentVariable("SMTP_SERVER")!,
-            Port         = Environment.GetEnvironmentVariable("SMTP_PORT")!
+            UserName = Environment.GetEnvironmentVariable("SMTP_USERNAME")!,
+            Password = Environment.GetEnvironmentVariable("SMTP_PASSWORD")!,
+            DisplayName = Environment.GetEnvironmentVariable("SMTP_DISPLAY_NAME")!,
+            Server = Environment.GetEnvironmentVariable("SMTP_SERVER")!,
+            Port = Environment.GetEnvironmentVariable("SMTP_PORT")!,
+            FromEmail = Environment.GetEnvironmentVariable("SMTP_FROM_EMAIL")!,
         };
 
         var authentication = new Authentication
@@ -229,7 +234,8 @@ public static class ServiceCollectionExtension
             _.Password    = smtpSettings.Password;
             _.DisplayName = smtpSettings.DisplayName;
             _.Server      = smtpSettings.Server;
-            _.Port        = smtpSettings.Port;
+            _.Port = smtpSettings.Port;
+            _.FromEmail = smtpSettings.FromEmail;
         });
         services.Configure<Authentication>(_ => {
             _.Google = authentication.Google;
@@ -249,8 +255,10 @@ public static class ServiceCollectionExtension
 
     public static IServiceCollection RegisterInfrastructureServices(this IServiceCollection services)
     {
-        
+
         services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<ITemplateService, TemplateService>();
+        services.AddScoped<IPdfService, PdfService>();
         services.AddScoped<ITokenService, Shared.Services.Token.TokenService>();
         services.AddScoped<IOtpService, OtpService>();
         services.AddScoped<IStripeService, StripeService>();

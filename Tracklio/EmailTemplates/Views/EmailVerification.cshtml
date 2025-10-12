@@ -1,0 +1,23 @@
+@model Tracklio.EmailTemplates.Models.EmailVerificationModel
+@{
+    Layout = "~/EmailTemplates/Views/_Layout.cshtml";
+    ViewBag.Title = "Verify your email address";
+    ViewBag.SupportEmail = Model.SupportEmail;
+    ViewBag.SupportPhone = Model.SupportPhone;
+}
+
+<h1>Verify<br>your email address</h1>
+
+<p class="greeting">Hi @Model.CustomerName</p>
+
+<p class="message">
+    Thanks for signing up! Please verify your email address to activate your Tracklio account.
+</p>
+
+<div class="code-container">
+    <div class="code-label">Your Verification Code</div>
+    <div class="code">@Model.VerificationCode</div>
+</div>
+
+<p class="instruction">Enter this code in the app to complete your registration.</p>
+<p class="expiry-warning">The code will expire in @Model.ExpiryMinutes minutes for security reasons.</p>

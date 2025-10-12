@@ -1,0 +1,22 @@
+@model Tracklio.EmailTemplates.Models.AppealRejectedModel
+@{
+    Layout = "~/EmailTemplates/Views/_Layout.cshtml";
+    ViewBag.Title = "Your Appeal Was Unsuccessful";
+    ViewBag.SupportEmail = Model.SupportEmail;
+    ViewBag.SupportPhone = Model.SupportPhone;
+}
+
+<h1>Your Appeal Was<br>Unsuccessful</h1>
+
+<p class="greeting">Hi @Model.FirstName</p>
+
+<p class="message">
+    Unfortunately, your appeal for PCN #@Model.TicketId was rejected. Payment of £@Model.Amount is due by @Model.DueDate to avoid extra charges.
+</p>
+
+<div class="status-container rejected">
+    <div class="status-label">Appeal Status</div>
+    <div class="status rejected">Rejected</div>
+</div>
+
+<a href="#" class="payment-button">Pay now</a>

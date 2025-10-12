@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using Tracklio.EmailTemplates.Models;
 using Tracklio.Shared.Domain.Dto;
 using Tracklio.Shared.Domain.Entities;
 using Tracklio.Shared.Persistence;
@@ -63,13 +64,18 @@ public sealed class SendOtp : ISlice
             };
             
             await context.UserOtps.AddAsync(otp, cancellationToken);
-            
-            await context.SaveChangesAsync(cancellationToken);
-            
-            var emailBody = $"Kindly use this Otp:{code} to validate your account";
 
-            await emailService.SendEmailAsync(request.Email, "VERIFY EMAIL", emailBody);
-            
+            await context.SaveChangesAsync(cancellationToken);
+
+            var emailModel = new EmailVerificationModel
+            {
+                CustomerName = $"{existingUser.FirstName} {existingUser.LastName}",
+                VerificationCode = code,
+                ExpiryMinutes = 10
+            };
+
+            await emailService.SendTemplatedEmailAsync(request.Email, "Verify Your Email - Tracklio", "EmailVerification", emailModel);
+
             return GenericResponse<string>.Success("Otp has been sent successfully", null!);
         }
         

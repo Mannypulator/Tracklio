@@ -3,8 +3,10 @@ using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Tracklio.EmailTemplates.Models;
 using Tracklio.Shared.Domain.Dto;
 using Tracklio.Shared.Persistence;
+using Tracklio.Shared.Services;
 using Tracklio.Shared.Slices;
 
 namespace Tracklio.Features.Auth;
@@ -42,37 +44,45 @@ public sealed class EmailVerification : ISlice
         public string Otp { get; set; }
     };
 
-    public class VerifyEmailCommandHandler(RepositoryContext context) : IRequestHandler<EmailVerification.VerifyEmailCommand, GenericResponse<string>>
+    public class VerifyEmailCommandHandler(RepositoryContext context, IEmailService emailService) : IRequestHandler<EmailVerification.VerifyEmailCommand, GenericResponse<string>>
     {
         public async Task<GenericResponse<string?>> Handle(VerifyEmailCommand request, CancellationToken cancellationToken)
         {
-                       
+
             var otpExists = await context
                 .UserOtps
                 .AsNoTracking()
-                .AnyAsync(u 
-                    => u.Email.Trim() == request.Email.Trim() 
+                .AnyAsync(u
+                    => u.Email.Trim() == request.Email.Trim()
                        && u.OneTimePassword.Trim() == request.Otp.Trim(), cancellationToken: cancellationToken);
 
             if (!otpExists)
             {
                 return GenericResponse<string>.Error(400, "Invalid OTP");
             }
-            
+
             var user = await context.Users.FirstOrDefaultAsync(u => u.Email.Trim() == request.Email.Trim(), cancellationToken);
 
             if (user == null)
             {
                 return GenericResponse<string>.Error(404, "User not found");
             }
-            
+
             user.EmailConfirmed = true;
             user.UpdatedAt =  DateTime.UtcNow;
-            
+
             await context.SaveChangesAsync(cancellationToken);
-            
+
+            // Send welcome email after successful verification
+            var welcomeEmailModel = new WelcomeEmailModel
+            {
+                FirstName = user.FirstName
+            };
+
+            await emailService.SendTemplatedEmailAsync(user.Email, "Welcome to Tracklio!", "WelcomeEmail", welcomeEmailModel);
+
             return GenericResponse<string>.Success("Otp verified", null!);
-            
+
         }
     }
 

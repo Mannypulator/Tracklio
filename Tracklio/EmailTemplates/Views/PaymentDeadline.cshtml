@@ -1,0 +1,17 @@
+@model Tracklio.EmailTemplates.Models.PaymentDeadlineModel
+@{
+    Layout = "~/EmailTemplates/Views/_Layout.cshtml";
+    ViewBag.Title = "Your PCN Payment Deadline Is Approaching";
+    ViewBag.SupportEmail = Model.SupportEmail;
+    ViewBag.SupportPhone = Model.SupportPhone;
+}
+
+<h1>Your PCN Payment<br>Deadline Is Approaching</h1>
+
+<p class="greeting">Hi @Model.FirstName</p>
+
+<p class="message">
+    Your PCN #@Model.TicketId for your vehicle @Model.VehicleRegistration must be paid by @Model.DueDate. Late payments may incur extra fees.
+</p>
+
+<a href="#" class="payment-button">Pay now</a>

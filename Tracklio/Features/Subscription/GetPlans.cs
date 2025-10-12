@@ -40,7 +40,7 @@ public class GetPlans : ISlice
                 .AsNoTracking()
                 .Select(p => new SubscriptionPlanDto
                 {
-                    Id = p.Name,
+                    Id = p.Id.ToString(),
                     Name = p.DisplayName,
                     Icon = p.Icon,
                     Price = request.BillingPeriod == "yearly" ? p.PriceYearly / 12 : p.PriceMonthly,

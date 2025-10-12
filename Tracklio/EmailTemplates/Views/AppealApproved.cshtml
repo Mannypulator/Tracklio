@@ -1,0 +1,20 @@
+@model Tracklio.EmailTemplates.Models.AppealApprovedModel
+@{
+    Layout = "~/EmailTemplates/Views/_Layout.cshtml";
+    ViewBag.Title = "Great News! Your Appeal Was Approved";
+    ViewBag.SupportEmail = Model.SupportEmail;
+    ViewBag.SupportPhone = Model.SupportPhone;
+}
+
+<h1>Great News! Your Appeal<br>Was Approved</h1>
+
+<p class="greeting">Hi @Model.FirstName</p>
+
+<p class="message">
+    Your appeal for PCN #@Model.TicketId for your vehicle @Model.VehicleRegistration was successful. No further action is required.
+</p>
+
+<div class="status-container success">
+    <div class="status-label">Appeal Status</div>
+    <div class="status success">Approved</div>
+</div>

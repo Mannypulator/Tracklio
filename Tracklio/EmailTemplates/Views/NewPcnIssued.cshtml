@@ -1,0 +1,21 @@
+@model Tracklio.EmailTemplates.Models.NewPcnIssuedModel
+@{
+    Layout = "~/EmailTemplates/Views/_Layout.cshtml";
+    ViewBag.Title = "A New PCN Was Issued";
+    ViewBag.SupportEmail = Model.SupportEmail;
+    ViewBag.SupportPhone = Model.SupportPhone;
+}
+
+<h1>A New PCN Was Issued</h1>
+
+<p class="greeting">Hi @Model.FirstName</p>
+
+<p class="message">
+    A new parking ticket has been issued for your vehicle @Model.VehicleRegistration on @Model.Date at @Model.Location.
+</p>
+
+<p class="message">
+    Check details and take action to avoid extra fees.
+</p>
+
+<a href="@Model.TicketUrl" class="payment-button">View ticket</a>

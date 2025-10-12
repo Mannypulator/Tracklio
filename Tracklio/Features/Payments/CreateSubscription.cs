@@ -1,5 +1,6 @@
 using System;
 using System.Security.Claims;
+using System.Text.Json.Serialization;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -46,6 +47,7 @@ public class CreateSubscription : ISlice
 
     public record CreateSubscriptionCommand(CreateSubscriptionRequest Subscription) : IRequest<GenericResponse<SubscriptionResponse>>
     {
+        [JsonIgnore]
         public Guid UserId { get; set; }
     }
 
